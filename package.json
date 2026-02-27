@@ -11,6 +11,7 @@
     "typecheck": "pnpm -r typecheck",
     "typecheck:f": "bash -c 'pnpm --filter $1 typecheck' _",
     "test:f": "bash -c 'pnpm --filter $1 test' _",
+    "test:coverage:f": "bash -c 'pnpm --filter $1 exec vitest run --coverage' _",
     "build": "pnpm -r build",
     "build:f": "bash -c 'pnpm --filter $1 build' _",
     "dev:f": "bash -c 'pnpm --filter $1 dev' _",
@@ -23,6 +24,7 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^9.20.0",
+    "@vitest/coverage-v8": "3.2.4",
     "eslint": "^9.20.0",
     "fast-check": "^3.23.0",
     "prettier": "^3.5.0",

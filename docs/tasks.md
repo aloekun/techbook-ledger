@@ -19,19 +19,19 @@
   - .gitignoreに.envを追加
   - _Requirements: 4.4, 5.1, 8.2_
 
-- [ ] 2. Notion API連携の実装
-  - [ ] 2.1 NotionClientクラスの実装
+- [x] 2. Notion API連携の実装
+  - [x] 2.1 NotionClientクラスの実装
     - 環境変数から認証情報を読み込むコンストラクタ
     - queryByIsbn()メソッド: ISBNでデータベース検索
     - createBookRecord()メソッド: 新規ページ作成
     - エラーハンドリングとレート制限対応
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5_
-  
-  - [ ] 2.2 NotionClientのプロパティテスト
+
+  - [x] 2.2 NotionClientのプロパティテスト
     - **Property 14: Book_RecordからNotionプロパティへのマッピング**
     - **Validates: Requirements 5.2, 5.3**
-  
-  - [ ] 2.3 NotionClientのユニットテスト
+
+  - [x] 2.3 NotionClientのユニットテスト
     - 環境変数読込のテスト
     - Notion APIエラー処理のテスト（モック使用）
     - レート制限処理のテスト

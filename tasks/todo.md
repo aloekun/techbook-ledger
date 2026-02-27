@@ -18,3 +18,20 @@
 - サーバー起動: OK (http://127.0.0.1:3000 でリッスン確認)
 - .env が .gitignore に含まれている: OK
 - shared の型が server から import 可能: OK
+
+---
+
+# Task 2: Notion API連携の実装
+
+## Plan
+- [x] 2.3 NotionClient ユニットテストを先行作成（RED）
+- [x] 2.1 NotionClient クラスの実装（GREEN）
+- [x] 2.2 Property 14 プロパティテストの作成
+- [x] リファクタリングと品質確認（REFACTOR）
+
+## Review
+- lint: 0 errors, 0 warnings
+- type-check: Success (shared, server)
+- テスト: 26 passed (unit 16, property 10)
+- カバレッジ: notion-client.ts 100%/100%/100%/100%, 全体 85%+
+- ビルド: Build successful

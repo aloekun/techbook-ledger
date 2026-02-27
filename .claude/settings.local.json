@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run build:hooks-rs:*)"
+      "Bash(npm run build:hooks-rs:*)",
+      "Bash(pnpm --version:*)",
+      "Bash(pnpm typecheck:*)",
+      "Bash(pnpm run typecheck:f:*)",
+      "Bash(pnpm run build:f:*)",
+      "Bash(pnpm run test:f:*)"
     ]
   },
   "hooks": {

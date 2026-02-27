@@ -36,13 +36,17 @@ export class NotionConnectionError extends Error {
   }
 }
 
+export function normalizeIsbn(isbn: string): string {
+  return isbn.trim().toLowerCase();
+}
+
 export function buildNotionProperties(
   bookData: BookData,
   registrationDate: Date,
 ): Record<string, unknown> {
   return {
     ISBN: {
-      title: [{ text: { content: bookData.isbn } }],
+      title: [{ text: { content: normalizeIsbn(bookData.isbn) } }],
     },
     タイトル: {
       rich_text: [{ text: { content: bookData.title } }],
@@ -95,6 +99,12 @@ function classifyAndThrow(error: unknown): never {
       );
     }
 
+    if (code === APIErrorCode.ObjectNotFound) {
+      throw new NotionConnectionError(
+        "指定されたNotionデータベースが見つかりません。データベースIDとインテグレーション権限を確認してください",
+      );
+    }
+
     if (code === APIErrorCode.ServiceUnavailable) {
       throw new NotionConnectionError(
         "Notionに接続できません。ネットワーク接続を確認してください",
@@ -123,7 +133,7 @@ export class NotionBookClient {
   }
 
   async queryByIsbn(isbn: string): Promise<NotionPage | null> {
-    const normalizedIsbn = isbn.toLowerCase();
+    const normalizedIsbn = normalizeIsbn(isbn);
 
     const response = await this.executeWithRetry(() =>
       this.client.databases.query({

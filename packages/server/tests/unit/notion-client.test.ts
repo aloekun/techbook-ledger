@@ -190,31 +190,34 @@ describe("NotionBookClient", () => {
 
     it("should auto-assign registrationDate when creating a record", async () => {
       vi.useFakeTimers();
-      const bookData = createBookData();
-      const now = new Date("2026-02-28T12:00:00.000Z");
-      vi.setSystemTime(now);
+      try {
+        const bookData = createBookData();
+        const now = new Date("2026-02-28T12:00:00.000Z");
+        vi.setSystemTime(now);
 
-      mockPagesCreate.mockResolvedValueOnce({
-        id: "new-page-id",
-        url: "https://www.notion.so/new-page-id",
-      });
+        mockPagesCreate.mockResolvedValueOnce({
+          id: "new-page-id",
+          url: "https://www.notion.so/new-page-id",
+        });
 
-      const client = new NotionBookClient({
-        token: "secret_test",
-        databaseId: "db-id",
-      });
-      await client.createBookRecord(bookData);
+        const client = new NotionBookClient({
+          token: "secret_test",
+          databaseId: "db-id",
+        });
+        await client.createBookRecord(bookData);
 
-      expect(mockPagesCreate).toHaveBeenCalledWith(
-        expect.objectContaining({
-          properties: expect.objectContaining({
-            登録日時: {
-              date: { start: "2026-02-28T12:00:00.000Z" },
-            },
+        expect(mockPagesCreate).toHaveBeenCalledWith(
+          expect.objectContaining({
+            properties: expect.objectContaining({
+              登録日時: {
+                date: { start: "2026-02-28T12:00:00.000Z" },
+              },
+            }),
           }),
-        }),
-      );
-      vi.useRealTimers();
+        );
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 
@@ -331,6 +334,34 @@ describe("NotionBookClient", () => {
         url: "https://www.notion.so/page-id-123",
       });
       expect(mockDatabasesQuery).toHaveBeenCalledTimes(2);
+    });
+
+    it("should throw NotionConnectionError on object not found error", async () => {
+      const error = createNotionError("object_not_found", 404);
+      mockDatabasesQuery.mockRejectedValueOnce(error);
+
+      const client = new NotionBookClient({
+        token: "secret_test",
+        databaseId: "invalid-db-id",
+      });
+
+      await expect(client.queryByIsbn("9784297138189")).rejects.toThrow(
+        NotionConnectionError,
+      );
+    });
+
+    it("should include user-friendly message in ObjectNotFound error", async () => {
+      const error = createNotionError("object_not_found", 404);
+      mockDatabasesQuery.mockRejectedValueOnce(error);
+
+      const client = new NotionBookClient({
+        token: "secret_test",
+        databaseId: "invalid-db-id",
+      });
+
+      await expect(client.queryByIsbn("9784297138189")).rejects.toThrow(
+        "指定されたNotionデータベースが見つかりません。データベースIDとインテグレーション権限を確認してください",
+      );
     });
 
     it("should throw NotionConnectionError on service unavailable error", async () => {

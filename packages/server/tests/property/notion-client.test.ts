@@ -1,7 +1,10 @@
 import { describe, it, expect } from "vitest";
 import fc from "fast-check";
 import type { BookData } from "@techbook-ledger/shared";
-import { buildNotionProperties } from "../../src/services/notion-client.js";
+import {
+  buildNotionProperties,
+  normalizeIsbn,
+} from "../../src/services/notion-client.js";
 
 // BookData arbitrary generator
 const bookDataArb: fc.Arbitrary<BookData> = fc.record({
@@ -45,7 +48,7 @@ describe("Feature: tech-book-decision-support, Property 14: BookRecordからNoti
 
         expect(isbn).toBeDefined();
         expect(isbn.title).toHaveLength(1);
-        expect(isbn.title[0].text.content).toBe(bookData.isbn);
+        expect(isbn.title[0].text.content).toBe(normalizeIsbn(bookData.isbn));
       }),
       { numRuns: 100 },
     );

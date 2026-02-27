@@ -1,16 +1,33 @@
 {
   "name": "techbook-ledger",
   "version": "0.1.0",
+  "private": true,
   "description": "TechBook Ledger - Tech book record and report",
+  "packageManager": "pnpm@10.28.1",
   "scripts": {
+    "test": "pnpm -r test",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "typecheck": "pnpm -r typecheck",
+    "typecheck:f": "bash -c 'pnpm --filter $1 typecheck' _",
+    "test:f": "bash -c 'pnpm --filter $1 test' _",
+    "build": "pnpm -r build",
+    "build:f": "bash -c 'pnpm --filter $1 build' _",
+    "dev:f": "bash -c 'pnpm --filter $1 dev' _",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "build:hooks-rs": "cd .claude/hooks-rs && cargo build --release && cp target/release/validate-command.exe ../validate-command.exe"
   },
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "",
   "license": "MIT",
   "devDependencies": {
-  },
-  "dependencies": {
+    "@eslint/js": "^9.20.0",
+    "eslint": "^9.20.0",
+    "fast-check": "^3.23.0",
+    "prettier": "^3.5.0",
+    "typescript": "^5.7.0",
+    "typescript-eslint": "^8.24.0",
+    "vitest": "^3.0.0"
   }
 }

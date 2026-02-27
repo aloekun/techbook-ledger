@@ -76,3 +76,7 @@ TDD・テストピラミッド・Property-Based Testing・カバレッジ基準�
 ## 定量的な品質確認
 タスク完了前に必ず実行する品質チェックとその報告フォーマットは [`ai/rules/QUALITY_CHECK.md`](ai/rules/QUALITY_CHECK.md) を参照してください。
 lint・型チェック・テスト・E2E・ビルドの全チェックをパスしてからタスク完了としてください。
+
+## PR レビューコメントの読み取り
+PR レビューコメントを効率的に取得・フィルタするパターンは [`ai/rules/GITHUB_PR_REVIEW.md`](ai/rules/GITHUB_PR_REVIEW.md) を参照してください。
+`gh api` の `--jq` フラグで API レベルでフィルタし、大量の JSON をそのまま取得しないでください。

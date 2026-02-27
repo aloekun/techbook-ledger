@@ -50,3 +50,24 @@
 - GitHub の `Closes #N` キーワードはデフォルトブランチ（main）へのマージ時のみ発動する
 - `develop` へのマージでは Issue は自動クローズされない
 - Git Flow 運用では `develop` → `main` マージ時に自動クローズされるのを待つ
+
+## Task 2: Notion API連携の実装
+
+### pnpm スクリプト経由でサブコマンドにフラグを渡す場合は `pnpm exec` を使う
+- `pnpm --filter $1 test -- --coverage` だと `vitest run "--" "--coverage"` になり `--` が二重化する
+- pnpm がスクリプト実行時に引数の前に自動で `--` を挿入するため
+- **解決策**: `pnpm --filter $1 exec vitest run --coverage` でツールを直接実行する
+- `pnpm exec` はパッケージの node_modules/.bin を PATH に追加して直接コマンドを実行する
+
+```json
+"test:coverage:f": "bash -c 'pnpm --filter $1 exec vitest run --coverage' _"
+```
+
+### @vitest/coverage-v8 のバージョンは vitest と揃える
+- `@vitest/coverage-v8` と `vitest` は同じバージョンにしないと peer dependency 警告が出る
+- vitest 3.2.4 なら `@vitest/coverage-v8@3.2.4` を指定する
+
+### vi.useFakeTimers() と async リトライの相互作用に注意
+- `vi.useFakeTimers()` はグローバルに全テストに影響する
+- `setTimeout` を使うリトライロジックがある場合、fake timers だとタイマーが自動で進まずタイムアウトする
+- **解決策**: fake timers はタイムスタンプ検証テストのみで使い、リトライテストでは `retryDelayMs: 0` を注入して real timers で実行する

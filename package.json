@@ -1,0 +1,16 @@
+{
+  "name": "techbook-ledger",
+  "version": "0.1.0",
+  "description": "TechBook Ledger - Tech book record and report",
+  "scripts": {
+    "build:hooks-rs": "cd .claude/hooks-rs && cargo build --release && cp target/release/validate-command.exe ../validate-command.exe"
+  },
+  "keywords": [
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}

@@ -1,0 +1,8 @@
+# Rust build artifacts
+.claude/hooks-rs/target/
+
+# Built executables (rebuild with: npm run build:hooks-rs)
+.claude/validate-command.exe
+
+# Node
+node_modules/

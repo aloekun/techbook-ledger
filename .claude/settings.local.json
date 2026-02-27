@@ -15,7 +15,12 @@
       "Bash(git commit:*)",
       "Bash(gh pr create:*)",
       "Bash(gh api:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(jj status:*)",
+      "Bash(jj git init:*)",
+      "Bash(jj bookmark:*)",
+      "Bash(jj log:*)",
+      "Bash(jj diff:*)"
     ]
   },
   "hooks": {

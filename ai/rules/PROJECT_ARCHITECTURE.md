@@ -160,43 +160,33 @@ pnpm lint
 pnpm typecheck
 ```
 
-### Server (`packages/server`)
+### Per-package (filter shorthand)
+
+`bash -c` + 位置パラメータにより、パッケージ名を引数で受け取るスクリプト。
+`--` は付けずに呼び出す。
 
 ```bash
-# Start development server (with hot reload)
-pnpm --filter server dev
+# Type check (single package)
+pnpm run typecheck:f shared
+pnpm run typecheck:f server
 
-# Build for production
-pnpm --filter server build
+# Test (single package)
+pnpm run test:f shared
+pnpm run test:f server
 
-# Run server tests
-pnpm --filter server test
+# Build (single package)
+pnpm run build:f shared
+pnpm run build:f server
 
+# Dev server (single package)
+pnpm run dev:f server
+```
+
+### Per-package (direct filter)
+
+```bash
 # Start production server
 pnpm --filter server start
-```
-
-### Extension (`packages/extension`)
-
-```bash
-# Start extension dev server (HMR via CRXJS)
-pnpm --filter extension dev
-
-# Build extension for production
-pnpm --filter extension build
-
-# Run extension tests
-pnpm --filter extension test
-```
-
-### Shared (`packages/shared`)
-
-```bash
-# Build shared types
-pnpm --filter shared build
-
-# Run shared tests
-pnpm --filter shared test
 ```
 
 ## Key Data Models

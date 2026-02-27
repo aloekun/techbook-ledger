@@ -12,7 +12,7 @@
 
 ## Tasks
 
-- [ ] 1. ローカルサーバーのセットアップ
+- [x] 1. ローカルサーバーのセットアップ
   - Node.jsプロジェクトの初期化（package.json作成）
   - 必要な依存関係のインストール（express, @notionhq/client, dotenv, cors）
   - .envファイルテンプレート作成（NOTION_TOKEN, NOTION_DATABASE_ID）

@@ -6,7 +6,15 @@
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm run typecheck:f:*)",
       "Bash(pnpm run build:f:*)",
-      "Bash(pnpm run test:f:*)"
+      "Bash(pnpm run test:f:*)",
+      "Bash(gh repo view:*)",
+      "Bash(git branch:*)",
+      "Bash(gh issue create:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(gh pr create:*)",
+      "Bash(gh api:*)"
     ]
   },
   "hooks": {

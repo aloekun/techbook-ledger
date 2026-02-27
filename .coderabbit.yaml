@@ -1,3 +1,6 @@
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
 reviews:
-  base_branches:
-    - "develop"
+  auto_review:
+    enabled: true
+    base_branches:
+      - "develop"

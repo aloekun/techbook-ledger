@@ -17,8 +17,12 @@ function requireEnv(name: string): string {
 }
 
 export function loadServerConfig(): ServerConfig {
+  const port = Number(process.env["PORT"] ?? "3000");
+  if (Number.isNaN(port) || port < 1 || port > 65535) {
+    throw new Error("PORT は 1〜65535 の数値で指定してください");
+  }
   return {
-    port: Number(process.env["PORT"] ?? "3000"),
+    port,
     notionToken: requireEnv("NOTION_TOKEN"),
     notionDatabaseId: requireEnv("NOTION_DATABASE_ID"),
   };

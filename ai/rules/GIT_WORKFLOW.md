@@ -1,9 +1,26 @@
 # Branch / Commit / PR Guidelines for Claude Code
 
+## 0. ブランチ構成
+
+```
+main        リリース用（保護ブランチ）
+  └── develop   日常開発のベース
+        └── feature/1-xxx   各タスクの作業ブランチ
+```
+
+| ブランチ | 役割 | マージ先 |
+|---------|------|---------|
+| `main` | リリース済みの安定版。GitHub デフォルトブランチ | - |
+| `develop` | 開発の統合ブランチ。feature ブランチの PR はここに出す | `main`（リリース時） |
+| `feature/*` | 個別タスクの作業ブランチ | `develop` |
+| `hotfix/*` | 本番緊急対応 | `main` + `develop` |
+
 ## 1. ブランチ命名規則
 
 ### フォーマット
-<type>/<issue番号>-<kebab-case-の説明>
+`<type>/<issue番号>-<kebab-case-の説明>`
+
+Issue 番号は **必須**。GitHub Issue を先に作成してから作業を開始する。
 
 ### typeの一覧
 
@@ -18,25 +35,26 @@
 | `hotfix` | 本番緊急対応 |
 
 ### 命名例
-feature/123-add-login-validation
-fix/456-session-error-after-password-reset
-refactor/789-extract-auth-service
-docs/101-update-readme-setup
-chore/update-eslint-config
-hotfix/critical-payment-null-error
+feature/1-setup-local-server
+fix/12-session-error-after-password-reset
+refactor/23-extract-auth-service
+docs/34-update-readme-setup
+chore/45-update-eslint-config
+hotfix/99-critical-payment-null-error
 
 ### ブランチ作成ルール
-- **必ずデフォルトブランチ（`develop`）の最新から切る**
-- 1ブランチ = 1つの目的・1つのIssue
+- **必ず `develop` の最新から切る**（hotfix のみ `main` から切る）
+- 1ブランチ = 1つの目的・1つの Issue
 - ブランチ名は小文字・ハイフン区切り（スペース・アンダースコア禁止）
-- Issue番号がある場合は必ず含める
 
 ### Claude Codeへの指示
+```bash
 # ブランチ作成前に必ず最新を取得する
 git checkout develop && git pull origin develop
 
 # ブランチを作成して移動
 git checkout -b <type>/<issue番号>-<説明>
+```
 
 ## 2. コミットメッセージ規約
 
@@ -109,11 +127,19 @@ BREAKING CHANGE: XMLレスポンスは廃止。
 
 ## 3. Pull Request規約
 
+### PR のマージ先
+
+| ブランチ種別 | マージ先 |
+|-------------|---------|
+| `feature/*`, `fix/*`, `refactor/*`, `docs/*`, `test/*`, `chore/*` | `develop` |
+| `hotfix/*` | `main`（+ `develop` にもマージ） |
+| `develop`（リリース時） | `main` |
+
 ### PR タイトル
 コミットメッセージと同じConventional Commits形式 + Issue番号
 
-feat(auth): パスワードリセット後の自動ログイン機能を追加 #456
-fix(ui): CTAボタンのコントラスト比をWCAG AA基準に修正 #789
+feat(server): ローカルサーバーの基盤を構築 #1
+fix(parser): ISBN正規化のハイフン処理を修正 #12
 
 ### PR 本文テンプレート
 

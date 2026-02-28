@@ -60,14 +60,14 @@
     - **Property 17: 重複検出時のURL返却**
     - **Validates: Requirements 6.3**
 
-- [ ] 4. リクエスト検証の実装
-  - [ ] 4.1 Request Validatorの実装
+- [x] 4. リクエスト検証の実装
+  - [x] 4.1 Request Validatorの実装
     - validateBookRecord()関数: 必須フィールド検証
     - データ型検証
     - ISBNフォーマット検証（10桁または13桁の数字）
     - _Requirements: 4.3_
-  
-  - [ ] 4.2 リクエスト検証のプロパティテスト
+
+  - [x] 4.2 リクエスト検証のプロパティテスト
     - **Property 12: リクエスト検証の完全性**
     - **Validates: Requirements 4.3**
 

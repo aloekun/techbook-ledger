@@ -55,3 +55,19 @@
 - テスト: 41 passed (unit 24, property 17)
 - カバレッジ: duplicate-checker.ts 100%/100%/100%/100%, services 全体 100%
 - 全体カバレッジ: 87%+ (閾値 80% クリア)
+
+---
+
+# Task 4: リクエスト検証の実装
+
+## Plan
+- [x] 4.1 ユニットテスト作成 (tests/unit/request-validator.test.ts) - RED
+- [x] 4.1 validateBookRecord() 実装 (src/middleware/validator.ts) - GREEN
+- [x] 4.2 Property 12: リクエスト検証の完全性
+- [x] 品質確認 (test, typecheck, lint, coverage)
+
+## Review
+- lint: 0 errors, 0 warnings
+- type-check: Success (server)
+- テスト: 80 passed (unit 33 + property 6 = 新規 39)
+- カバレッジ: validator.ts 100%/100%/100%/100%, 全体 89%+

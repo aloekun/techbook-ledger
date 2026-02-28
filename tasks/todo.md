@@ -71,3 +71,43 @@
 - type-check: Success (server)
 - テスト: 80 passed (unit 33 + property 6 = 新規 39)
 - カバレッジ: validator.ts 100%/100%/100%/100%, 全体 89%+
+
+---
+
+# Task 7: Chrome拡張機能の基本構造
+
+## Plan
+- [x] 7.1 プロジェクト構造の作成 (package.json, tsconfig, vite, vitest, manifest.json)
+- [x] 7.1 ディレクトリ構造の作成 (popup, content, background, settings, storage)
+- [x] 7.1 依存関係のインストール (@crxjs/vite-plugin, @types/chrome, vite)
+- [x] 7.2 Extension Storage ユニットテスト作成 (tests/unit/storage-config.test.ts) - RED
+- [x] 7.2 Extension Storage 実装 (src/storage/config.ts) - GREEN
+- [x] 7.3 Property 20: 設定の永続化ラウンドトリップ (tests/property/storage-config.test.ts)
+- [x] shared vitest.config.ts に passWithNoTests 追加
+- [x] 品質確認 (lint, typecheck, test, build, coverage)
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | ✅ 0 errors, 0 warnings |
+| type-check | ✅ Success (shared, server, extension) |
+| テスト | ✅ 100 passed (server 84 + extension 16) |
+| カバレッジ | ✅ config.ts 100%/100%/100%/100% |
+| ビルド | ✅ vite build successful (dist/ 生成確認) |
+
+## PR #11 レビュー対応
+
+- [x] CodeRabbit: passWithNoTests: true 削除 (packages/shared/vitest.config.ts)
+- [x] shared の test スクリプトを tsc --noEmit に変更 (型のみパッケージのため)
+- [ ] 7.4 shared パッケージの typecheck 修正 (別タスクとして docs/tasks.md に追加済み)
+
+### テスト結果 (レビュー対応後)
+
+| パッケージ | テスト | カバレッジ |
+|-----------|--------|-----------|
+| shared | ✅ tsc --noEmit 通過 | N/A (型のみ) |
+| server | ✅ 84 passed | 89.49% |
+| extension | ✅ 16 passed | config.ts 100% |
+
+既知の問題: `pnpm typecheck` が全パッケージで失敗する (shared の dist/ 未生成問題)。タスク 7.4 で対応予定。

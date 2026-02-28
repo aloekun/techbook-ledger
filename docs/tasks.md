@@ -37,26 +37,26 @@
     - レート制限処理のテスト
     - _Requirements: 5.1, 5.4, 5.5_
 
-- [ ] 3. 重複チェックロジックの実装
-  - [ ] 3.1 Duplicate Checkerの実装
+- [x] 3. 重複チェックロジックの実装
+  - [x] 3.1 Duplicate Checkerの実装
     - checkDuplicate()関数: ISBN正規化と検索
     - 大文字小文字を区別しない比較
     - 既存レコードのURL取得
     - _Requirements: 6.1, 6.2, 6.3_
-  
-  - [ ] 3.2 重複チェックのプロパティテスト
+
+  - [x] 3.2 重複チェックのプロパティテスト
     - **Property 8: 重複チェックの実行**
     - **Validates: Requirements 3.2**
-  
-  - [ ] 3.3 重複チェックのプロパティテスト
+
+  - [x] 3.3 重複チェックのプロパティテスト
     - **Property 9: 重複時の登録拒否**
     - **Validates: Requirements 3.3**
-  
-  - [ ] 3.4 重複チェックのプロパティテスト
+
+  - [x] 3.4 重複チェックのプロパティテスト
     - **Property 16: ISBN大文字小文字の同一視**
     - **Validates: Requirements 6.2**
-  
-  - [ ] 3.5 重複チェックのプロパティテスト
+
+  - [x] 3.5 重複チェックのプロパティテスト
     - **Property 17: 重複検出時のURL返却**
     - **Validates: Requirements 6.3**
 

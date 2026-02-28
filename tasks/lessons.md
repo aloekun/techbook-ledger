@@ -90,3 +90,15 @@
 - リモートに存在しない新規 bookmark を push すると「Refusing to create new remote bookmark」エラーになる
 - これは jj の安全機構で、意図しないリモート bookmark 作成を防ぐ設計
 - **回避策**: 初回 push 時は `jj git push --bookmark <name> --allow-new` を使う
+
+## Task 3: 重複チェックロジックの実装
+
+### fast-check で async コールバックには fc.asyncProperty を使う
+- `fc.property` に async コールバックを渡すと、Promise が truthy 値として扱われ「Property failed by returning false」エラーになる
+- **解決策**: `fc.asyncProperty` + `await fc.assert()` を使う
+- sync テストには `fc.property`、async テストには `fc.asyncProperty` と使い分ける
+
+### shared パッケージの tsbuildinfo が陳腐化すると dist が生成されない
+- `tsconfig.tsbuildinfo` が残っているが `dist/` が削除されている場合、`tsc` は「変更なし」と判断して何も出力しない
+- server の typecheck が `Cannot find module '@techbook-ledger/shared'` で失敗する
+- **回避策**: `tsconfig.tsbuildinfo` を削除してから `pnpm run build:f shared` を実行する

@@ -71,8 +71,8 @@
     - **Property 12: リクエスト検証の完全性**
     - **Validates: Requirements 4.3**
 
-- [ ] 5. Express APIサーバーの実装
-  - [ ] 5.1 APIエンドポイントの実装
+- [x] 5. Express APIサーバーの実装
+  - [x] 5.1 APIエンドポイントの実装
     - POST /api/books エンドポイント
     - CORS設定（localhost拡張機能からのリクエスト許可）
     - localhostのみでリッスン
@@ -80,22 +80,28 @@
     - エラーレスポンスの統一フォーマット
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.5, 4.6_
   
-  - [ ] 5.2 APIエンドポイントのプロパティテスト
+  - [x] 5.2 APIエンドポイントのプロパティテスト
     - **Property 10: 新規レコードの作成**
     - **Validates: Requirements 3.4**
-  
-  - [ ] 5.3 APIエンドポイントのプロパティテスト
+
+  - [x] 5.3 APIエンドポイントのプロパティテスト
     - **Property 11: タイムスタンプの自動付与**
     - **Validates: Requirements 3.5**
-  
-  - [ ] 5.4 APIエンドポイントのプロパティテスト
+
+  - [x] 5.4 APIエンドポイントのプロパティテスト
     - **Property 13: 認証情報の非露出**
     - **Validates: Requirements 4.5**
-  
-  - [ ] 5.5 APIエンドポイントのユニットテスト
+
+  - [x] 5.5 APIエンドポイントのユニットテスト
     - CORS設定の確認
     - 各種エラーケースのレスポンス検証
     - _Requirements: 4.2, 4.6, 7.3_
+
+  - [ ] 5.6 重複チェックのアトミック化
+    - checkDuplicate → createBookRecord の非アトミック問題を解消
+    - 同一ISBNの並行リクエストで二重登録が発生しうる
+    - BookService に registerIfAbsent() 的なアトミック操作を導入検討
+    - _Requirements: 6.1_
 
 - [ ] 6. Checkpoint - ローカルサーバーの動作確認
   - すべてのテストが通ることを確認

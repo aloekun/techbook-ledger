@@ -1,31 +1,17 @@
-import express, { type Express } from "express";
-import cors from "cors";
 import { loadServerConfig } from "./config/env.js";
-
-const ALLOWED_ORIGIN_PREFIXES = ["chrome-extension://"];
+import { NotionBookClient } from "./services/notion-client.js";
+import { createApp } from "./app.js";
 
 const config = loadServerConfig();
 
-const app: Express = express();
+const notionClient = new NotionBookClient({
+  token: config.notionToken,
+  databaseId: config.notionDatabaseId,
+});
 
-app.use(express.json());
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      if (
-        !origin ||
-        ALLOWED_ORIGIN_PREFIXES.some((prefix) => origin.startsWith(prefix))
-      ) {
-        callback(null, true);
-      } else {
-        callback(new Error(`Origin ${origin} is not allowed by CORS`));
-      }
-    },
-  }),
-);
-
-app.get("/health", (_req, res) => {
-  res.json({ status: "ok" });
+const app = createApp({
+  bookService: notionClient,
+  allowedOrigins: config.allowedExtensionOrigins,
 });
 
 app.listen(config.port, "127.0.0.1", () => {

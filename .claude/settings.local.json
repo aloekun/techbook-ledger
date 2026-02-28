@@ -32,7 +32,11 @@
       "Bash(jj abandon:*)",
       "Bash(gh pr view:*)",
       "Bash(jj rebase:*)",
-      "Bash(pnpm run lint)"
+      "Bash(pnpm run lint)",
+      "Bash(gh pr list:*)",
+      "Bash(jj show:*)",
+      "Bash(jj file show:*)",
+      "Bash(pnpm test:*)"
     ]
   },
   "hooks": {

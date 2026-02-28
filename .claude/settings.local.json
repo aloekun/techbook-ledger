@@ -20,7 +20,13 @@
       "Bash(jj git init:*)",
       "Bash(jj bookmark:*)",
       "Bash(jj log:*)",
-      "Bash(jj diff:*)"
+      "Bash(jj diff:*)",
+      "Bash(gh issue list:*)",
+      "Bash(pnpm lint:*)",
+      "Bash(pnpm run test:coverage:f:*)",
+      "Bash(npx vitest run:*)",
+      "Bash(pnpm build:*)",
+      "Bash(git fetch:*)"
     ]
   },
   "hooks": {

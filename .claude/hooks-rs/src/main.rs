@@ -44,7 +44,7 @@ fn get_blocked_patterns() -> Vec<BlockedPattern> {
 - ゴミ箱への移動を検討"#,
         },
         BlockedPattern {
-            pattern: Regex::new(r"(?i)^git\s+").unwrap(),
+            pattern: Regex::new(r"(?i)(^|&&|;|\|\|)\s*git\s+").unwrap(),
             message: r#"**git コマンドがブロックされました**
 
 このプロジェクトでは Jujutsu (jj) をバージョン管理に使用しています。
@@ -63,7 +63,7 @@ git コマンドを直接使用すると、バージョン履歴に不整合が�
 詳細は CLAUDE.md の "Version Control" セクションを参照してください。"#,
         },
         BlockedPattern {
-            pattern: Regex::new(r"(?i)^cd\s+/d\s").unwrap(),
+            pattern: Regex::new(r"(?i)(^|&&|;|\|\|)\s*cd\s+/d\s").unwrap(),
             message: r#"**cd /d コマンドがブロックされました**
 
 `cd /d` は Windows のコマンドプロンプト固有の構文で、Claude Code の bash 環境では動作しません。
@@ -152,4 +152,125 @@ fn main() -> ExitCode {
     }
 
     ExitCode::SUCCESS
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn patterns() -> Vec<BlockedPattern> {
+        get_blocked_patterns()
+    }
+
+    fn is_blocked(command: &str) -> bool {
+        validate_command(command, &patterns()).is_some()
+    }
+
+    // --- git: direct commands (should block) ---
+
+    #[test]
+    fn blocks_git_at_start() {
+        assert!(is_blocked("git push"));
+    }
+
+    #[test]
+    fn blocks_git_status() {
+        assert!(is_blocked("git status"));
+    }
+
+    // --- git: chained after shell operators (should block) ---
+
+    #[test]
+    fn blocks_git_after_ampersand_ampersand() {
+        assert!(is_blocked("cd /e/work && git push"));
+    }
+
+    #[test]
+    fn blocks_git_after_semicolon() {
+        assert!(is_blocked("true; git status"));
+    }
+
+    #[test]
+    fn blocks_git_after_or() {
+        assert!(is_blocked("false || git log"));
+    }
+
+    #[test]
+    fn allows_git_after_pipe() {
+        // パイプ後の git は検出しない（マークダウンテーブル等での誤検知を防ぐため）
+        assert!(!is_blocked("echo data | git apply"));
+    }
+
+    #[test]
+    fn blocks_git_in_triple_chain() {
+        assert!(is_blocked("cd /path && echo ok && git commit -m 'test'"));
+    }
+
+    // --- git: allowed commands (should NOT block) ---
+
+    #[test]
+    fn allows_jj_git_push() {
+        assert!(!is_blocked("jj git push"));
+    }
+
+    #[test]
+    fn allows_jj_git_fetch() {
+        assert!(!is_blocked("jj git fetch"));
+    }
+
+    #[test]
+    fn allows_gh_pr_create() {
+        assert!(!is_blocked("gh pr create --title 'test'"));
+    }
+
+    #[test]
+    fn allows_pnpm_lint() {
+        assert!(!is_blocked("pnpm lint"));
+    }
+
+    #[test]
+    fn allows_jj_status() {
+        assert!(!is_blocked("jj status"));
+    }
+
+    // --- cd /d: direct and chained (should block) ---
+
+    #[test]
+    fn blocks_cd_d_at_start() {
+        assert!(is_blocked(r"cd /d e:\work"));
+    }
+
+    #[test]
+    fn blocks_cd_d_after_ampersand_ampersand() {
+        assert!(is_blocked(r"echo ok && cd /d e:\work"));
+    }
+
+    // --- rm -rf (should block regardless of position) ---
+
+    #[test]
+    fn blocks_rm_rf_at_start() {
+        assert!(is_blocked("rm -rf /tmp/test"));
+    }
+
+    #[test]
+    fn blocks_rm_rf_after_chain() {
+        assert!(is_blocked("cd /path && rm -rf /tmp"));
+    }
+
+    // --- safe commands (should NOT block) ---
+
+    #[test]
+    fn allows_empty_command() {
+        assert!(!is_blocked(""));
+    }
+
+    #[test]
+    fn allows_ls() {
+        assert!(!is_blocked("ls -la"));
+    }
+
+    #[test]
+    fn allows_cd_normal() {
+        assert!(!is_blocked("cd /e/work/project"));
+    }
 }

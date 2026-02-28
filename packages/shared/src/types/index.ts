@@ -1,7 +1,7 @@
-export type { BookData, BookRecord } from "./book.js";
-export type {
-  RegistrationResponse,
-  ValidationResult,
-  DuplicateCheckResult,
+export { type BookData, type BookRecord } from "./book.js";
+export {
+  type RegistrationResponse,
+  type ValidationResult,
+  type DuplicateCheckResult,
 } from "./api.js";
-export type { ServerConfig, ExtensionConfig } from "./config.js";
+export { type ServerConfig, type ExtensionConfig } from "./config.js";

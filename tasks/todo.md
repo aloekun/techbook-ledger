@@ -100,14 +100,23 @@
 
 - [x] CodeRabbit: passWithNoTests: true 削除 (packages/shared/vitest.config.ts)
 - [x] shared の test スクリプトを tsc --noEmit に変更 (型のみパッケージのため)
-- [ ] 7.4 shared パッケージの typecheck 修正 (別タスクとして docs/tasks.md に追加済み)
+- [x] 7.4 shared パッケージの typecheck 修正
 
-### テスト結果 (レビュー対応後)
+---
 
-| パッケージ | テスト | カバレッジ |
-|-----------|--------|-----------|
-| shared | ✅ tsc --noEmit 通過 | N/A (型のみ) |
-| server | ✅ 84 passed | 89.49% |
-| extension | ✅ 16 passed | config.ts 100% |
+# Task 7.4: shared パッケージの typecheck 修正
 
-既知の問題: `pnpm typecheck` が全パッケージで失敗する (shared の dist/ 未生成問題)。タスク 7.4 で対応予定。
+## Plan
+- [x] tsconfig.json に emitDeclarationOnly: true を追加
+- [x] package.json の exports から import (JS) を削除し types のみに
+- [x] export type を export { type ... } に変更 (.d.ts 出力のため)
+- [x] 品質確認 (lint, typecheck, test, build)
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | ✅ 0 errors, 0 warnings |
+| type-check | ✅ Success (shared, server, extension) |
+| テスト | ✅ 106 passed (server 84 + extension 22) |
+| ビルド | ✅ shared dist/ 生成確認 (.d.ts x2) |

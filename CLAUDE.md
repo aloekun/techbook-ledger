@@ -65,6 +65,10 @@
 ## プロジェクト構成・アーキテクチャ
 コマンド・技術スタック・ディレクトリ構成・ルーティングの詳細は [`ai/rules/PROJECT_ARCHITECTURE.md`](ai/rules/PROJECT_ARCHITECTURE.md) を参照してください。
 
+## バージョン管理（Jujutsu）
+このプロジェクトでは **Jujutsu (jj)** をバージョン管理に使用します。`git` コマンドの直接使用はフックによりブロックされます。
+jj の基本操作・ブックマークワークフロー・注意事項は [`ai/rules/VCS_JUJUTSU.md`](ai/rules/VCS_JUJUTSU.md) を参照してください。
+
 ## ブランチ・コミット・PR ガイドライン
 ブランチ命名・コミットメッセージ・PR作成の規約は [`ai/rules/GIT_WORKFLOW.md`](ai/rules/GIT_WORKFLOW.md) を参照してください。
 作業開始・終了時には必ずこのガイドラインに従ってください。

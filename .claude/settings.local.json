@@ -26,7 +26,11 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm run build:hooks-rs:*)",
       "Bash(cargo test:*)",
-      "Bash(jj squash:*)"
+      "Bash(jj squash:*)",
+      "Bash(pnpm run test:file:*)",
+      "Bash(jj split --help:*)",
+      "Bash(jj split:*)",
+      "Bash(jj abandon:*)"
     ]
   },
   "hooks": {

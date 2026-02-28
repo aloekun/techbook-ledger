@@ -11,6 +11,7 @@
     "typecheck": "pnpm -r typecheck",
     "typecheck:f": "bash -c 'pnpm --filter $1 typecheck' _",
     "test:f": "bash -c 'pnpm --filter $1 test' _",
+    "test:file": "bash -c 'pnpm --filter $1 exec vitest run $2' _",
     "test:coverage:f": "bash -c 'pnpm --filter $1 exec vitest run --coverage' _",
     "build": "pnpm -r build",
     "build:f": "bash -c 'pnpm --filter $1 build' _",

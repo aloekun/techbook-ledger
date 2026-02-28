@@ -35,3 +35,23 @@
 - テスト: 26 passed (unit 16, property 10)
 - カバレッジ: notion-client.ts 100%/100%/100%/100%, 全体 85%+
 - ビルド: Build successful
+
+---
+
+# Task 3: 重複チェックロジックの実装
+
+## Plan
+- [x] 3.1 ユニットテスト作成 (tests/unit/duplicate-checker.test.ts) - RED
+- [x] 3.1 checkDuplicate() 実装 (src/services/duplicate-checker.ts) - GREEN
+- [x] 3.2 Property 8: 重複チェックの実行
+- [x] 3.3 Property 9: 重複時の登録拒否
+- [x] 3.4 Property 16: ISBN大文字小文字の同一視
+- [x] 3.5 Property 17: 重複検出時のURL返却
+- [x] 品質確認 (test, typecheck, lint, coverage)
+
+## Review
+- lint: 0 errors, 0 warnings
+- type-check: Success (shared, server)
+- テスト: 41 passed (unit 24, property 17)
+- カバレッジ: duplicate-checker.ts 100%/100%/100%/100%, services 全体 100%
+- 全体カバレッジ: 87%+ (閾値 80% クリア)

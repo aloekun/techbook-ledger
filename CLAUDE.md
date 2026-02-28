@@ -52,6 +52,8 @@ pnpm workspace による 3 パッケージ構成:
 
 `@techbook-ledger/shared` は server/extension から `workspace:*` で参照される。共通 devDeps (vitest, typescript, eslint 等) はルートに配置。
 
+詳細は [ai/rules/PROJECT_ARCHITECTURE.md](ai/rules/PROJECT_ARCHITECTURE.md) を参照。
+
 ## アーキテクチャ上の注意点
 
 - Notion API トークンはサーバー側の `.env` にのみ保存。ブラウザには一切露出しない
@@ -68,6 +70,8 @@ pnpm workspace による 3 パッケージ構成:
 - `vitest.config.ts` で `globals: true` (import 不要)
 - カバレッジ閾値 80% (server パッケージで設定済み)
 - Property tests は `docs/design.md` の Correctness Properties (Property 1-20) に対応
+
+詳細は [ai/rules/TESTING_STRATEGY.md](ai/rules/TESTING_STRATEGY.md) を参照。
 
 ## バージョン管理 (Jujutsu)
 

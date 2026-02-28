@@ -102,19 +102,19 @@
   - 手動でcurlコマンドでAPIをテスト
   - 質問があればユーザーに確認
 
-- [ ] 7. Chrome拡張機能の基本構造
-  - [ ] 7.1 プロジェクト構造の作成
+- [x] 7. Chrome拡張機能の基本構造
+  - [x] 7.1 プロジェクト構造の作成
     - manifest.jsonの作成（Manifest v3）
     - ディレクトリ構造の作成（popup, content, background, settings）
     - 必要な依存関係の設定
     - _Requirements: 2.1, 9.1, 10.2_
-  
-  - [ ] 7.2 Extension Storageの実装
+
+  - [x] 7.2 Extension Storageの実装
     - 設定の保存・読込機能
     - デフォルト設定の定義
     - _Requirements: 10.1_
-  
-  - [ ] 7.3 Extension Storageのプロパティテスト
+
+  - [x] 7.3 Extension Storageのプロパティテスト
     - **Property 20: 設定の永続化ラウンドトリップ**
     - **Validates: Requirements 10.1, 10.5**
 

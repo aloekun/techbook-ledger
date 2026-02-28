@@ -31,7 +31,8 @@
       "Bash(jj split:*)",
       "Bash(jj abandon:*)",
       "Bash(gh pr view:*)",
-      "Bash(jj rebase:*)"
+      "Bash(jj rebase:*)",
+      "Bash(pnpm run lint)"
     ]
   },
   "hooks": {

@@ -1,0 +1,23 @@
+{
+  "manifest_version": 3,
+  "name": "TechBook Ledger",
+  "version": "0.1.0",
+  "description": "技術書の購買意思決定を支援するChrome拡張機能",
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["http://localhost:3000/*", "http://127.0.0.1:3000/*"],
+  "action": {
+    "default_popup": "src/popup/index.html",
+    "default_title": "TechBook Ledger"
+  },
+  "background": {
+    "service_worker": "src/background/service-worker.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["*://*.amazon.co.jp/*", "*://gihyo.jp/*"],
+      "js": ["src/content/index.ts"]
+    }
+  ],
+  "options_page": "src/settings/index.html"
+}

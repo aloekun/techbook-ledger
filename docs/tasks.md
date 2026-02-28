@@ -118,7 +118,7 @@
     - **Property 20: 設定の永続化ラウンドトリップ**
     - **Validates: Requirements 10.1, 10.5**
 
-  - [ ] 7.4 shared パッケージの typecheck 修正
+  - [x] 7.4 shared パッケージの typecheck 修正
     - `export type` のみのパッケージで `tsc` が `dist/` を生成しない問題を解決
     - `pnpm typecheck` が全パッケージで No errors になること
     - server / extension が `@techbook-ledger/shared` を正しく解決できること

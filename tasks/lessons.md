@@ -102,3 +102,9 @@
 - `tsconfig.tsbuildinfo` が残っているが `dist/` が削除されている場合、`tsc` は「変更なし」と判断して何も出力しない
 - server の typecheck が `Cannot find module '@techbook-ledger/shared'` で失敗する
 - **回避策**: `tsconfig.tsbuildinfo` を削除してから `pnpm run build:f shared` を実行する
+
+### jj で feature ブランチの作業を始める前に必ず `jj new` する
+- jj の working copy は親の変更（change）そのもの。`jj new` せずにファイルを追加すると、既存の変更が書き換わる
+- `develop` ブックマークが付いた変更上で作業すると、develop の内容が変わり remote と divergent になる
+- feature ブックマークを同じ変更に作成すると `develop = feature` になり、PR でコンフリクトする
+- **手順**: `jj new` で新しい変更を作成 → 実装 → `jj describe` → `jj bookmark create`

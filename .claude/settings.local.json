@@ -28,9 +28,10 @@
       "Bash(cargo test:*)",
       "Bash(jj squash:*)",
       "Bash(pnpm run test:file:*)",
-      "Bash(jj split --help:*)",
       "Bash(jj split:*)",
-      "Bash(jj abandon:*)"
+      "Bash(jj abandon:*)",
+      "Bash(gh pr view:*)",
+      "Bash(jj rebase:*)"
     ]
   },
   "hooks": {

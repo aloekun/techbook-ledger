@@ -44,7 +44,7 @@ fn get_blocked_patterns() -> Vec<BlockedPattern> {
 - ゴミ箱への移動を検討"#,
         },
         BlockedPattern {
-            pattern: Regex::new(r"(?i)(^|&&|;|\|\|)\s*git\s+").unwrap(),
+            pattern: Regex::new(r"(?i)(^|&&|;|\|\||&)\s*git\s+").unwrap(),
             message: r#"**git コマンドがブロックされました**
 
 このプロジェクトでは Jujutsu (jj) をバージョン管理に使用しています。
@@ -63,7 +63,7 @@ git コマンドを直接使用すると、バージョン履歴に不整合が�
 詳細は CLAUDE.md の "Version Control" セクションを参照してください。"#,
         },
         BlockedPattern {
-            pattern: Regex::new(r"(?i)(^|&&|;|\|\|)\s*cd\s+/d\s").unwrap(),
+            pattern: Regex::new(r"(?i)(^|&&|;|\|\||&)\s*cd\s+/d\s").unwrap(),
             message: r#"**cd /d コマンドがブロックされました**
 
 `cd /d` は Windows のコマンドプロンプト固有の構文で、Claude Code の bash 環境では動作しません。
@@ -204,6 +204,11 @@ mod tests {
     #[test]
     fn blocks_git_in_triple_chain() {
         assert!(is_blocked("cd /path && echo ok && git commit -m 'test'"));
+    }
+
+    #[test]
+    fn blocks_git_after_single_ampersand() {
+        assert!(is_blocked("echo ok & git status"));
     }
 
     // --- git: allowed commands (should NOT block) ---

@@ -71,3 +71,22 @@
 - `vi.useFakeTimers()` はグローバルに全テストに影響する
 - `setTimeout` を使うリトライロジックがある場合、fake timers だとタイマーが自動で進まずタイムアウトする
 - **解決策**: fake timers はタイムスタンプ検証テストのみで使い、リトライテストでは `retryDelayMs: 0` を注入して real timers で実行する
+
+## Issue #5: validate-command hook の修正
+
+### コマンドブロック正規表現で `^` アンカーを使うとシェル演算子チェーンをすり抜ける
+- `^git\s+` は `cd /path && git push` を検出できない（先頭が `cd` のため）
+- **解決策**: `(^|&&|;|\|\|)\s*git\s+` のようにシェル演算子もアンカーに含める
+- パイプ `|` は含めない。マークダウンテーブル `| git ... |` 等で false positive が発生するため
+- `gh pr create --body "..."` のボディ内テキストもコマンド文字列として検証される点に注意
+
+### jj bookmark は変更確定後に作成する
+- `jj bookmark create <name>` を先に実行すると、空コミットに bookmark が付く
+- その後 working copy で変更して `jj bookmark set <name>` しようとすると「Refusing to move bookmark backwards or sideways」エラーになる
+- **回避策**: 変更 → `jj describe -m "..."` → `jj bookmark create <name>` の順で実行する
+- やむを得ず移動する場合は `--allow-backwards` フラグを使う
+
+### jj git push の初回は --allow-new が必要
+- リモートに存在しない新規 bookmark を push すると「Refusing to create new remote bookmark」エラーになる
+- これは jj の安全機構で、意図しないリモート bookmark 作成を防ぐ設計
+- **回避策**: 初回 push 時は `jj git push --bookmark <name> --allow-new` を使う

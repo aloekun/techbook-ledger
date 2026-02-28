@@ -32,18 +32,22 @@
 # 1. develop の最新を取得
 jj git fetch
 
-# 2. 作業して変更を記述
+# 2. develop の上に新しい空の変更を作成（develop を汚さないための必須手順）
+jj new develop
+
+# 3. 実装作業を行う（working copy に自動反映される）
+
+# 4. 変更を記述
 jj describe -m "feat(scope): 説明"
 
-# 3. ブックマークを作成（変更を記述した後に作成すること）
+# 5. ブックマークを作成（変更を記述した後に作成すること）
 jj bookmark create feature/N-description
 
-# 4. 新しい変更を開始
-jj new
-
-# 5. リモートに push（初回は --allow-new が必要）
+# 6. リモートに push（初回は --allow-new が必要）
 jj git push --bookmark feature/N-description --allow-new
 ```
+
+**重要**: 手順 2 の `jj new develop` を省略すると、develop ブックマークが付いた変更を直接書き換えてしまい、PR マージ後にブックマーク競合が発生する。
 
 ### 既存ブランチへの追加コミット
 
@@ -60,6 +64,36 @@ jj bookmark set <name> --allow-backwards
 
 # 5. push
 jj git push --bookmark <name>
+```
+
+### PR マージ後の develop 復帰
+
+```bash
+# 1. リモート最新を取得
+jj git fetch
+
+# 2. develop をリモートの位置に合わせる（競合がある場合も同じ）
+jj bookmark set develop -r develop@origin
+
+# 3. develop 上に新しい変更を作成して作業を再開
+jj new develop
+```
+
+### 誤って develop 上で作業した場合の復旧
+
+```bash
+# 1. develop の親から新しい変更を作成
+jj new @-
+
+# 2. 誤って develop に入れた feature ファイルを新しい変更にコピー
+jj restore --from <develop_change_id> -- <feature_files...>
+
+# 3. develop ブックマークをリモートの位置に戻す（忘れると競合の原因になる）
+jj bookmark set develop -r develop@origin
+
+# 4. 以降は通常の feature ブランチ手順で進める
+jj describe -m "feat(scope): 説明"
+jj bookmark create feature/N-description
 ```
 
 ## 注意事項

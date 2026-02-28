@@ -81,13 +81,15 @@ pnpm workspace による 3 パッケージ構成:
 jj status                              # 状態確認
 jj diff                                # 差分
 jj log                                 # 履歴
+jj new develop                         # develop の上に新しい変更を作成（作業開始時に必須）
 jj describe -m "feat(scope): message"  # 変更を記述
-jj new                                 # 新しい変更を開始
 jj bookmark create feature/N-desc      # ブックマーク作成 (describe 後に実行)
 jj git push --bookmark name            # push (初回は --allow-new 追加)
 jj git fetch                           # fetch
 gh pr create --base develop ...        # PR 作成 (gh CLI 使用)
 ```
+
+**注意**: 作業開始時は必ず `jj new develop` で空の変更を作成してから作業する。develop ブックマーク上で直接作業するとブックマーク競合の原因になる。
 
 詳細は [ai/rules/VCS_JUJUTSU.md](ai/rules/VCS_JUJUTSU.md) を参照。
 

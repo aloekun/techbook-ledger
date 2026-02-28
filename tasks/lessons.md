@@ -108,3 +108,19 @@
 - `develop` ブックマークが付いた変更上で作業すると、develop の内容が変わり remote と divergent になる
 - feature ブックマークを同じ変更に作成すると `develop = feature` になり、PR でコンフリクトする
 - **手順**: `jj new` で新しい変更を作成 → 実装 → `jj describe` → `jj bookmark create`
+
+## Task 4: リクエスト検証の実装
+
+### develop ブックマーク競合の原因と防止策
+- **発生状況**: develop 上で直接作業 → 後から `jj new @-` で feature を分離 → `develop` ブックマークが変更済み change に残ったまま → PR マージ後に remote の develop が進み → ローカル develop と競合
+- **根本原因**: feature 分離時に `develop` ブックマークをリモートの位置に戻さなかった
+- **防止策 (作業開始時)**:
+  1. `jj git fetch` でリモート最新を取得
+  2. `jj new develop` で develop の上に空の change を作成
+  3. この空の change 上で作業を開始する（develop ブックマークは汚れない）
+- **防止策 (誤って develop 上で作業した場合)**:
+  1. `jj new @-` で feature 用の change を作成
+  2. `jj restore --from <develop_change_id> -- <files>` で feature ファイルをコピー
+  3. **`jj bookmark set develop -r develop@origin`** でブックマークをリモートの位置に戻す（この手順を忘れない）
+  4. feature のブックマーク作成・push を進める
+- **復旧方法**: `jj bookmark set develop -r <remote最新のrevision>` で解消できる

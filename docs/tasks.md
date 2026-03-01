@@ -97,7 +97,7 @@
     - 各種エラーケースのレスポンス検証
     - _Requirements: 4.2, 4.6, 7.3_
 
-  - [ ] 5.6 重複チェックのアトミック化
+  - [x] 5.6 重複チェックのアトミック化
     - checkDuplicate → createBookRecord の非アトミック問題を解消
     - 同一ISBNの並行リクエストで二重登録が発生しうる
     - BookService に registerIfAbsent() 的なアトミック操作を導入検討

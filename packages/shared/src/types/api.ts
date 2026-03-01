@@ -15,3 +15,7 @@ export interface DuplicateCheckResult {
   readonly notionPageId?: string;
   readonly notionUrl?: string;
 }
+
+export type RegisterResult =
+  | { readonly created: true; readonly notionUrl: string }
+  | { readonly created: false; readonly notionUrl: string };

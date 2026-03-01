@@ -1,5 +1,6 @@
 import { Client, APIErrorCode, isNotionClientError } from "@notionhq/client";
-import type { BookData } from "@techbook-ledger/shared";
+import type { BookData, RegisterResult } from "@techbook-ledger/shared";
+import { withIsbnLock } from "../utils/isbn-lock.js";
 
 export interface NotionPage {
   readonly id: string;
@@ -172,6 +173,17 @@ export class NotionBookClient {
     );
 
     return (response as { url: string }).url;
+  }
+
+  async registerIfAbsent(bookData: BookData): Promise<RegisterResult> {
+    return withIsbnLock(bookData.isbn, async () => {
+      const existing = await this.queryByIsbn(bookData.isbn);
+      if (existing) {
+        return { created: false as const, notionUrl: existing.url };
+      }
+      const notionUrl = await this.createBookRecord(bookData);
+      return { created: true as const, notionUrl };
+    });
   }
 
   private async executeWithRetry<T>(operation: () => Promise<T>): Promise<T> {

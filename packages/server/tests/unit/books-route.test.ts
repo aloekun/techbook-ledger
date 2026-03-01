@@ -1,7 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import request from "supertest";
 import type { BookData } from "@techbook-ledger/shared";
-import type { NotionPage } from "../../src/services/notion-client.js";
 import {
   NotionAuthError,
   NotionRateLimitError,
@@ -34,10 +33,9 @@ function createMockBookService(
   overrides: Partial<BookService> = {},
 ): BookService {
   return {
-    queryByIsbn: vi.fn().mockResolvedValue(null),
-    createBookRecord: vi
+    registerIfAbsent: vi
       .fn()
-      .mockResolvedValue("https://www.notion.so/new-page"),
+      .mockResolvedValue({ created: true, notionUrl: "https://www.notion.so/new-page" }),
     ...overrides,
   };
 }
@@ -67,13 +65,13 @@ describe("POST /api/books", () => {
       });
     });
 
-    it("should call createBookRecord with the book data", async () => {
+    it("should call registerIfAbsent with the book data", async () => {
       const app = createTestApp(mockService);
       const bookData = createValidBookData();
 
       await request(app).post("/api/books").send(bookData).expect(201);
 
-      expect(mockService.createBookRecord).toHaveBeenCalledWith(bookData);
+      expect(mockService.registerIfAbsent).toHaveBeenCalledWith(bookData);
     });
   });
 
@@ -116,23 +114,22 @@ describe("POST /api/books", () => {
       expect(response.body.message).toContain("isbn");
     });
 
-    it("should not call queryByIsbn when validation fails", async () => {
+    it("should not call registerIfAbsent when validation fails", async () => {
       const app = createTestApp(mockService);
 
       await request(app).post("/api/books").send({}).expect(400);
 
-      expect(mockService.queryByIsbn).not.toHaveBeenCalled();
+      expect(mockService.registerIfAbsent).not.toHaveBeenCalled();
     });
   });
 
   describe("duplicate detection", () => {
     it("should return 200 with isDuplicate when book already exists", async () => {
-      const existingPage: NotionPage = {
-        id: "existing-page-id",
-        url: "https://www.notion.so/existing-page",
-      };
       mockService = createMockBookService({
-        queryByIsbn: vi.fn().mockResolvedValue(existingPage),
+        registerIfAbsent: vi.fn().mockResolvedValue({
+          created: false,
+          notionUrl: "https://www.notion.so/existing-page",
+        }),
       });
       const app = createTestApp(mockService);
       const bookData = createValidBookData();
@@ -149,28 +146,12 @@ describe("POST /api/books", () => {
         isDuplicate: true,
       });
     });
-
-    it("should not call createBookRecord when duplicate is detected", async () => {
-      const existingPage: NotionPage = {
-        id: "existing-page-id",
-        url: "https://www.notion.so/existing-page",
-      };
-      mockService = createMockBookService({
-        queryByIsbn: vi.fn().mockResolvedValue(existingPage),
-      });
-      const app = createTestApp(mockService);
-      const bookData = createValidBookData();
-
-      await request(app).post("/api/books").send(bookData).expect(200);
-
-      expect(mockService.createBookRecord).not.toHaveBeenCalled();
-    });
   });
 
   describe("Notion API error handling", () => {
     it("should return 500 on NotionAuthError", async () => {
       mockService = createMockBookService({
-        queryByIsbn: vi.fn().mockRejectedValue(
+        registerIfAbsent: vi.fn().mockRejectedValue(
           new NotionAuthError("Notion認証に失敗しました。環境変数を確認してください"),
         ),
       });
@@ -190,7 +171,7 @@ describe("POST /api/books", () => {
 
     it("should return 429 on NotionRateLimitError", async () => {
       mockService = createMockBookService({
-        queryByIsbn: vi.fn().mockRejectedValue(
+        registerIfAbsent: vi.fn().mockRejectedValue(
           new NotionRateLimitError(
             "Notion APIがビジー状態です。しばらく待ってから再試行してください",
           ),
@@ -213,7 +194,7 @@ describe("POST /api/books", () => {
 
     it("should return 503 on NotionConnectionError", async () => {
       mockService = createMockBookService({
-        queryByIsbn: vi.fn().mockRejectedValue(
+        registerIfAbsent: vi.fn().mockRejectedValue(
           new NotionConnectionError(
             "Notionに接続できません。ネットワーク接続を確認してください",
           ),
@@ -236,7 +217,7 @@ describe("POST /api/books", () => {
 
     it("should return 500 on unexpected errors", async () => {
       mockService = createMockBookService({
-        queryByIsbn: vi.fn().mockRejectedValue(new Error("unexpected")),
+        registerIfAbsent: vi.fn().mockRejectedValue(new Error("unexpected")),
       });
       const app = createTestApp(mockService);
       const bookData = createValidBookData();
@@ -248,26 +229,6 @@ describe("POST /api/books", () => {
 
       expect(response.body.success).toBe(false);
       expect(response.body.message).toBe("予期しないエラーが発生しました");
-    });
-
-    it("should return 500 on NotionAuthError from createBookRecord", async () => {
-      mockService = createMockBookService({
-        createBookRecord: vi.fn().mockRejectedValue(
-          new NotionAuthError("Notion認証に失敗しました。環境変数を確認してください"),
-        ),
-      });
-      const app = createTestApp(mockService);
-      const bookData = createValidBookData();
-
-      const response = await request(app)
-        .post("/api/books")
-        .send(bookData)
-        .expect(500);
-
-      expect(response.body).toEqual({
-        success: false,
-        message: "Notion認証に失敗しました。環境変数を確認してください",
-      });
     });
   });
 
@@ -322,24 +283,15 @@ describe("POST /api/books", () => {
   });
 
   describe("request flow", () => {
-    it("should follow validate -> duplicate check -> create flow", async () => {
-      const callOrder: string[] = [];
-      mockService = {
-        queryByIsbn: vi.fn().mockImplementation(async () => {
-          callOrder.push("queryByIsbn");
-          return null;
-        }),
-        createBookRecord: vi.fn().mockImplementation(async () => {
-          callOrder.push("createBookRecord");
-          return "https://www.notion.so/new-page";
-        }),
-      };
+    it("should follow validate -> registerIfAbsent flow", async () => {
+      mockService = createMockBookService();
       const app = createTestApp(mockService);
       const bookData = createValidBookData();
 
       await request(app).post("/api/books").send(bookData).expect(201);
 
-      expect(callOrder).toEqual(["queryByIsbn", "createBookRecord"]);
+      expect(mockService.registerIfAbsent).toHaveBeenCalledTimes(1);
+      expect(mockService.registerIfAbsent).toHaveBeenCalledWith(bookData);
     });
   });
 });

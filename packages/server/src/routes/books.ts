@@ -1,24 +1,24 @@
 import { Router, type Request, type Response } from "express";
-import type { BookData, RegistrationResponse } from "@techbook-ledger/shared";
-import type { NotionPage } from "../services/notion-client.js";
+import type {
+  BookData,
+  RegisterResult,
+  RegistrationResponse,
+} from "@techbook-ledger/shared";
 import {
   NotionAuthError,
   NotionRateLimitError,
   NotionConnectionError,
 } from "../services/notion-client.js";
 import { validateBookRecord } from "../middleware/validator.js";
-import { checkDuplicate } from "../services/duplicate-checker.js";
 
 export interface BookService {
-  queryByIsbn(isbn: string): Promise<NotionPage | null>;
-  createBookRecord(bookData: BookData): Promise<string>;
+  registerIfAbsent(bookData: BookData): Promise<RegisterResult>;
 }
 
 export function createBooksRouter(bookService: BookService): Router {
   const router = Router();
 
   router.post("/", async (req: Request, res: Response) => {
-    // 1. Validate request
     const validation = validateBookRecord(req.body);
     if (!validation.valid) {
       const response: RegistrationResponse = {
@@ -32,31 +32,33 @@ export function createBooksRouter(bookService: BookService): Router {
     const bookData: BookData = req.body;
 
     try {
-      // 2. Check duplicate
-      const duplicateResult = await checkDuplicate(bookData.isbn, bookService);
-      if (duplicateResult.exists) {
+      const result = await bookService.registerIfAbsent(bookData);
+
+      if (result.created) {
+        const response: RegistrationResponse = {
+          success: true,
+          message: "書籍を登録しました",
+          notionUrl: result.notionUrl,
+        };
+        res.status(201).json(response);
+      } else {
         const response: RegistrationResponse = {
           success: false,
           message: "この書籍は既に登録されています",
-          notionUrl: duplicateResult.notionUrl,
+          notionUrl: result.notionUrl,
           isDuplicate: true,
         };
         res.status(200).json(response);
-        return;
       }
-
-      // 3. Create record in Notion
-      const notionUrl = await bookService.createBookRecord(bookData);
-      const response: RegistrationResponse = {
-        success: true,
-        message: "書籍を登録しました",
-        notionUrl,
-      };
-      res.status(201).json(response);
     } catch (error: unknown) {
-      const errorName = error instanceof Error ? error.constructor.name : "UnknownError";
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      console.error("POST /api/books error:", { errorName, message: errorMessage });
+      const errorName =
+        error instanceof Error ? error.constructor.name : "UnknownError";
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
+      console.error("POST /api/books error:", {
+        errorName,
+        message: errorMessage,
+      });
 
       if (error instanceof NotionAuthError) {
         res.status(500).json({

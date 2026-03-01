@@ -8,21 +8,30 @@
   </head>
   <body>
     <div id="app">
-      <h1>設定</h1>
+      <h1>TechBook Ledger 設定</h1>
       <form id="settings-form">
         <div class="form-group">
           <label for="server-endpoint">サーバーエンドポイント</label>
           <input
-            type="url"
+            type="text"
             id="server-endpoint"
             placeholder="http://localhost:3000"
           />
+          <p class="hint">
+            localhostまたは127.0.0.1のHTTP URLのみ指定可能です
+          </p>
         </div>
         <div class="form-group">
-          <label for="whitelist">ホワイトリスト（1行に1ドメイン）</label>
-          <textarea id="whitelist" rows="5"></textarea>
+          <label for="whitelist"
+            >ホワイトリスト（1行に1ドメイン、ワイルドカード対応）</label
+          >
+          <textarea
+            id="whitelist"
+            rows="6"
+            placeholder="amazon.co.jp&#10;gihyo.jp&#10;*.amazon.co.jp"
+          ></textarea>
         </div>
-        <button type="submit">保存</button>
+        <button type="submit" id="save-button">保存</button>
         <div id="message"></div>
       </form>
     </div>

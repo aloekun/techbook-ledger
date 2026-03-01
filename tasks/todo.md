@@ -251,6 +251,41 @@
 
 ---
 
+# Task 10: Popup UIの実装
+
+## Plan
+- [x] 10.1 Popup HTML/CSS の作成
+  - status div にクラス追加、360px 幅ポップアップスタイリング
+  - settings.css と統一デザイン (色、フォント、ボーダー半径)
+  - 5 状態のステータス表示 (inactive/ready/loading/success/error)
+  - Requirements: 9.1, 9.2, 9.3, 9.5
+
+- [x] 10.2 Popup ロジックの実装
+  - popup-state.ts: 純粋関数 (状態導出、formatPrice、formatBookInfoHtml)
+  - messages.ts: メッセージプロトコル型定義 (GET_BOOK_DATA, REGISTER_BOOK)
+  - popup.ts: initPopup(deps?) + renderState + autoInit
+  - 依存注入パターンで getBookData/registerBook/scheduleReset を差し替え可能
+  - 3秒間の結果表示とリセット (scheduleReset 注入でテスト容易)
+  - Requirements: 3.1, 3.6, 3.7, 9.1, 9.3, 9.4, 9.5
+
+- [x] 10.3 Popup UI のユニットテスト
+  - popup-state.test.ts: 23 テスト (純粋関数のテスト)
+  - popup.test.ts: 16 テスト (DOM 統合テスト)
+  - TDD: RED -> GREEN -> REFACTOR サイクル
+  - Requirements: 9.1, 9.2, 9.3, 9.4
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 276 passed (extension 160, server 116) |
+| カバレッジ | 89% stmts / 92.51% branch / 92.1% funcs / 89% lines |
+| ビルド | Build successful (shared, server, extension) |
+
+---
+
 # Task 12: Settings Pageの実装
 
 ## Plan

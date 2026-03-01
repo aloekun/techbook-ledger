@@ -8,3 +8,4 @@ export {
   type ServerConfig,
   type ExtensionConfig,
 } from "./types/index.js";
+export { DEFAULT_WHITELIST, DEFAULT_EXTENSION_CONFIG } from "./types/config.js";

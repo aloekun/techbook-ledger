@@ -142,3 +142,30 @@
 | type-check | Success (shared, server) |
 | テスト | 116 passed (10 suites) |
 | カバレッジ | 87.76% (閾値 80% クリア) |
+
+---
+
+# Task 6: Checkpoint - ローカルサーバーの動作確認
+
+## 確認項目
+
+- [x] 全テスト通過: 138 passed (server 116 + extension 22)
+- [x] lint: 0 errors, 0 warnings
+- [x] typecheck: Success (shared, server, extension)
+- [x] サーバー起動: http://127.0.0.1:3201 でリッスン確認
+- [x] GET /health: `{"status":"ok"}`
+- [x] POST /api/books (正常登録): 201, `{"success":true,"message":"書籍を登録しました","notionUrl":"..."}`
+- [x] POST /api/books (重複検出): 200, `{"success":false,"message":"この書籍は既に登録されています","isDuplicate":true}`
+- [x] POST /api/books (バリデーションエラー): 400, 欠落フィールド一覧を返却
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| テスト | 138 passed (server 116, extension 22) |
+| lint | 0 errors, 0 warnings |
+| typecheck | Success (shared, server, extension) |
+| ヘルスチェック | GET /health -> 200 OK |
+| 正常登録 | POST /api/books -> 201 Created, Notion にページ作成確認 |
+| 重複検出 | 同一 ISBN 再送信 -> 200, isDuplicate: true |
+| バリデーション | 必須フィールド欠落 -> 400, 欠落フィールド名を返却 |

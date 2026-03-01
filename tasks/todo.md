@@ -343,3 +343,37 @@
 | テスト | 198 passed (extension 82 (32 new), server 116) |
 | カバレッジ | service-worker.ts 95.4%/93.33%/100%/95.4%, 全体 90.16% |
 | ビルド | Build successful (shared, server, extension) |
+
+---
+
+# Task 13: エラーハンドリングの統合
+
+## Plan
+- [x] 13.1 Extension側エラーメッセージの実装
+  - error-messages.ts: identifyMissingFields, formatMissingFieldsMessage (TDD)
+  - popup-state.ts: derivePopupState で欠落フィールド検出 + error 状態返却
+  - popup.ts: retry-btn 制御、retryable 状態対応
+  - popup.html: retry-btn 追加
+  - popup.css: retry-btn スタイル
+  - Requirements: 7.1, 7.2, 7.4, 7.5
+- [x] 13.2 Property 18: 欠落フィールドの特定テスト
+  - fast-check で任意の BookData + 欠落マスクを生成
+  - identifyMissingFields が正確に欠落フィールドを検出することを検証
+  - 100 回以上の反復、4 テストケース
+- [x] 13.3 エラーハンドリングのユニットテスト
+  - error-messages.test.ts: 20 テスト (identifyMissingFields, formatMissingFieldsMessage)
+  - popup-state.test.ts: 4 テスト追加 (欠落フィールド検出)
+  - popup.test.ts: 10 テスト追加 (欠落フィールド表示、再試行ボタン、エラーメッセージ統合)
+  - Requirements: 7.1, 7.2, 7.4, 7.5
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 237 passed (extension 121 (39 new), server 116) |
+| カバレッジ | 91.13% stmts / 93.19% branch / 93.33% funcs / 91.13% lines |
+| error-messages.ts | 100%/100%/100%/100% |
+| popup-state.ts | 100%/100%/100%/100% |
+| ビルド | Build successful (shared, server, extension) |

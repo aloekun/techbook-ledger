@@ -51,6 +51,42 @@ describe("derivePopupState", () => {
     derivePopupState(sampleBookData);
     expect(sampleBookData).toEqual(original);
   });
+
+  it("should return error state when title is missing", () => {
+    const data: BookData = { ...sampleBookData, title: "" };
+    const state = derivePopupState(data);
+    expect(state.status).toBe("error");
+    expect(state.bookData).toEqual(data);
+    expect(state.message).toContain("タイトル");
+    expect(state.message).toContain("次のフィールドが見つかりません");
+  });
+
+  it("should return error state when multiple fields are missing", () => {
+    const data: BookData = {
+      ...sampleBookData,
+      title: "",
+      author: "",
+      price: 0,
+    };
+    const state = derivePopupState(data);
+    expect(state.status).toBe("error");
+    expect(state.message).toContain("タイトル");
+    expect(state.message).toContain("著者");
+    expect(state.message).toContain("価格");
+  });
+
+  it("should return error state when pageCount is zero", () => {
+    const data: BookData = { ...sampleBookData, pageCount: 0 };
+    const state = derivePopupState(data);
+    expect(state.status).toBe("error");
+    expect(state.message).toContain("ページ数");
+  });
+
+  it("should keep bookData in error state for missing fields", () => {
+    const data: BookData = { ...sampleBookData, author: "" };
+    const state = derivePopupState(data);
+    expect(state.bookData).toEqual(data);
+  });
 });
 
 describe("createLoadingState", () => {

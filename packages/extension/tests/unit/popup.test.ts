@@ -55,6 +55,7 @@ function setupPopupDom(): void {
     <div id="status" class="status"></div>
     <div id="book-info"></div>
     <button id="register-btn" disabled>登録</button>
+    <button id="retry-btn" style="display:none">再試行</button>
     <div id="message"></div>
   `;
 }
@@ -396,6 +397,193 @@ describe("Popup UI: initPopup", () => {
       const message = document.getElementById("message") as HTMLDivElement;
       expect(message.textContent).toBeTruthy();
       expect(message.classList.contains("error")).toBe(true);
+    });
+  });
+
+  describe("Missing fields error (Req 7.4)", () => {
+    it("should show error state when book data has empty title", async () => {
+      const incompleteData: BookData = { ...sampleBookData, title: "" };
+      const mockGetBookData = vi.fn().mockResolvedValue(incompleteData);
+      await initPopup({ getBookData: mockGetBookData });
+
+      const status = document.getElementById("status") as HTMLDivElement;
+      expect(status.classList.contains("error")).toBe(true);
+
+      const message = document.getElementById("message") as HTMLDivElement;
+      expect(message.textContent).toContain("タイトル");
+      expect(message.textContent).toContain("次のフィールドが見つかりません");
+    });
+
+    it("should show all missing field names", async () => {
+      const incompleteData: BookData = {
+        ...sampleBookData,
+        title: "",
+        author: "",
+        price: 0,
+      };
+      const mockGetBookData = vi.fn().mockResolvedValue(incompleteData);
+      await initPopup({ getBookData: mockGetBookData });
+
+      const message = document.getElementById("message") as HTMLDivElement;
+      expect(message.textContent).toContain("タイトル");
+      expect(message.textContent).toContain("著者");
+      expect(message.textContent).toContain("価格");
+    });
+
+    it("should disable register button when fields are missing", async () => {
+      const incompleteData: BookData = { ...sampleBookData, author: "" };
+      const mockGetBookData = vi.fn().mockResolvedValue(incompleteData);
+      await initPopup({ getBookData: mockGetBookData });
+
+      const btn = document.getElementById("register-btn") as HTMLButtonElement;
+      expect(btn.disabled).toBe(true);
+    });
+
+    it("should still display book info when fields are missing", async () => {
+      const incompleteData: BookData = { ...sampleBookData, author: "" };
+      const mockGetBookData = vi.fn().mockResolvedValue(incompleteData);
+      await initPopup({ getBookData: mockGetBookData });
+
+      const bookInfo = document.getElementById("book-info") as HTMLDivElement;
+      expect(bookInfo.innerHTML).toContain("TypeScript入門");
+    });
+  });
+
+  describe("Retry button (Req 7.5)", () => {
+    it("should show retry button on network error", async () => {
+      const mockGetBookData = vi.fn().mockResolvedValue(sampleBookData);
+      const mockRegisterBook = vi
+        .fn()
+        .mockRejectedValue(new TypeError("Failed to fetch"));
+
+      await initPopup({
+        getBookData: mockGetBookData,
+        registerBook: mockRegisterBook,
+      });
+
+      const registerBtn = document.getElementById(
+        "register-btn",
+      ) as HTMLButtonElement;
+      registerBtn.click();
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const retryBtn = document.getElementById(
+        "retry-btn",
+      ) as HTMLButtonElement;
+      expect(retryBtn.style.display).not.toBe("none");
+    });
+
+    it("should hide retry button on successful registration", async () => {
+      const mockGetBookData = vi.fn().mockResolvedValue(sampleBookData);
+      const mockRegisterBook = vi.fn().mockResolvedValue({
+        success: true,
+        message: "書籍を登録しました",
+      } satisfies RegistrationResponse);
+      const mockScheduleReset = vi.fn();
+
+      await initPopup({
+        getBookData: mockGetBookData,
+        registerBook: mockRegisterBook,
+        scheduleReset: mockScheduleReset,
+      });
+
+      const registerBtn = document.getElementById(
+        "register-btn",
+      ) as HTMLButtonElement;
+      registerBtn.click();
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const retryBtn = document.getElementById(
+        "retry-btn",
+      ) as HTMLButtonElement;
+      expect(retryBtn.style.display).toBe("none");
+    });
+
+    it("should re-attempt registration when retry button clicked", async () => {
+      const mockGetBookData = vi.fn().mockResolvedValue(sampleBookData);
+      const mockRegisterBook = vi
+        .fn()
+        .mockRejectedValueOnce(new TypeError("Failed to fetch"))
+        .mockResolvedValueOnce({
+          success: true,
+          message: "書籍を登録しました",
+        } satisfies RegistrationResponse);
+      const mockScheduleReset = vi.fn();
+
+      await initPopup({
+        getBookData: mockGetBookData,
+        registerBook: mockRegisterBook,
+        scheduleReset: mockScheduleReset,
+      });
+
+      const registerBtn = document.getElementById(
+        "register-btn",
+      ) as HTMLButtonElement;
+      registerBtn.click();
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // First attempt failed - retry button should be visible
+      const retryBtn = document.getElementById(
+        "retry-btn",
+      ) as HTMLButtonElement;
+      expect(retryBtn.style.display).not.toBe("none");
+
+      // Click retry
+      retryBtn.click();
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      // Second attempt succeeded
+      const status = document.getElementById("status") as HTMLDivElement;
+      expect(status.classList.contains("success")).toBe(true);
+      expect(retryBtn.style.display).toBe("none");
+    });
+
+    it("should hide retry button when not in error state", async () => {
+      const mockGetBookData = vi.fn().mockResolvedValue(sampleBookData);
+      await initPopup({ getBookData: mockGetBookData });
+
+      const retryBtn = document.getElementById(
+        "retry-btn",
+      ) as HTMLButtonElement;
+      expect(retryBtn.style.display).toBe("none");
+    });
+  });
+
+  describe("Error messages integration", () => {
+    it("should show page not supported message (Req 7.1)", async () => {
+      const mockGetBookData = vi.fn().mockResolvedValue(null);
+      await initPopup({ getBookData: mockGetBookData });
+
+      const status = document.getElementById("status") as HTMLDivElement;
+      expect(status.textContent).toContain("このページは対応していません");
+    });
+
+    it("should show server connection error message (Req 7.2)", async () => {
+      const mockGetBookData = vi.fn().mockResolvedValue(sampleBookData);
+      const mockRegisterBook = vi.fn().mockResolvedValue({
+        success: false,
+        message:
+          "ローカルサーバーに接続できません。サーバーを起動してください",
+      } satisfies RegistrationResponse);
+      const mockScheduleReset = vi.fn();
+
+      await initPopup({
+        getBookData: mockGetBookData,
+        registerBook: mockRegisterBook,
+        scheduleReset: mockScheduleReset,
+      });
+
+      const btn = document.getElementById("register-btn") as HTMLButtonElement;
+      btn.click();
+
+      await new Promise((resolve) => setTimeout(resolve, 0));
+
+      const message = document.getElementById("message") as HTMLDivElement;
+      expect(message.textContent).toContain("ローカルサーバーに接続できません");
+      expect(message.textContent).toContain("サーバーを起動してください");
     });
   });
 });

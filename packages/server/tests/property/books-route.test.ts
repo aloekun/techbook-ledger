@@ -4,6 +4,11 @@ import fc from "fast-check";
 import type { BookData } from "@techbook-ledger/shared";
 import { createApp } from "../../src/app.js";
 import type { BookService } from "../../src/routes/books.js";
+import {
+  NotionAuthError,
+  NotionRateLimitError,
+  NotionConnectionError,
+} from "../../src/services/notion-client.js";
 
 function createTestApp(bookService: BookService) {
   return createApp({ bookService, allowedOrigins: ["chrome-extension://test"] });
@@ -218,5 +223,110 @@ describe("Feature: tech-book-decision-support, Property 13: 認証情報の非�
       expect(responseText).not.toContain("notionToken");
       expect(responseText).not.toContain("notionDatabaseId");
     }
+  });
+});
+
+describe("Feature: tech-book-decision-support, Property 15: Notion APIエラーの変換", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should convert NotionAuthError to 500 with user-friendly message for all BookData", async () => {
+    await fc.assert(
+      fc.asyncProperty(bookDataArb, async (bookData) => {
+        const mockService: BookService = {
+          registerIfAbsent: vi.fn().mockRejectedValue(
+            new NotionAuthError("Notion認証に失敗しました。環境変数を確認してください"),
+          ),
+        };
+        const app = createTestApp(mockService);
+
+        const response = await request(app)
+          .post("/api/books")
+          .send(bookData);
+
+        expect(response.status).toBe(500);
+        expect(response.body.success).toBe(false);
+        expect(typeof response.body.message).toBe("string");
+        expect(response.body.message.length).toBeGreaterThan(0);
+        expect(response.body).not.toHaveProperty("stack");
+      }),
+      { numRuns: 100 },
+    );
+  });
+
+  it("should convert NotionRateLimitError to 429 with user-friendly message for all BookData", async () => {
+    await fc.assert(
+      fc.asyncProperty(bookDataArb, async (bookData) => {
+        const mockService: BookService = {
+          registerIfAbsent: vi.fn().mockRejectedValue(
+            new NotionRateLimitError("Notion APIがビジー状態です。しばらく待ってから再試行してください"),
+          ),
+        };
+        const app = createTestApp(mockService);
+
+        const response = await request(app)
+          .post("/api/books")
+          .send(bookData);
+
+        expect(response.status).toBe(429);
+        expect(response.body.success).toBe(false);
+        expect(typeof response.body.message).toBe("string");
+        expect(response.body.message.length).toBeGreaterThan(0);
+        expect(response.body).not.toHaveProperty("stack");
+      }),
+      { numRuns: 100 },
+    );
+  });
+
+  it("should convert NotionConnectionError to 503 with user-friendly message for all BookData", async () => {
+    await fc.assert(
+      fc.asyncProperty(bookDataArb, async (bookData) => {
+        const mockService: BookService = {
+          registerIfAbsent: vi.fn().mockRejectedValue(
+            new NotionConnectionError("Notionに接続できません。ネットワーク接続を確認してください"),
+          ),
+        };
+        const app = createTestApp(mockService);
+
+        const response = await request(app)
+          .post("/api/books")
+          .send(bookData);
+
+        expect(response.status).toBe(503);
+        expect(response.body.success).toBe(false);
+        expect(typeof response.body.message).toBe("string");
+        expect(response.body.message.length).toBeGreaterThan(0);
+        expect(response.body).not.toHaveProperty("stack");
+      }),
+      { numRuns: 100 },
+    );
+  });
+
+  it("should convert unexpected errors to 500 with generic message for all BookData", async () => {
+    await fc.assert(
+      fc.asyncProperty(
+        bookDataArb,
+        fc.string({ minLength: 1, maxLength: 200 }),
+        async (bookData, errorMessage) => {
+          const mockService: BookService = {
+            registerIfAbsent: vi.fn().mockRejectedValue(new Error(errorMessage)),
+          };
+          const app = createTestApp(mockService);
+
+          const response = await request(app)
+            .post("/api/books")
+            .send(bookData);
+
+          expect(response.status).toBe(500);
+          expect(response.body.success).toBe(false);
+          expect(response.body.message).toBe("予期しないエラーが発生しました");
+          // Raw error message must NOT leak to client
+          expect(response.body.message).not.toBe(errorMessage);
+          expect(response.body).not.toHaveProperty("stack");
+        },
+      ),
+      { numRuns: 100 },
+    );
   });
 });

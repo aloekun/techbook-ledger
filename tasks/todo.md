@@ -207,3 +207,44 @@
 | type-check | Success (shared + extension) |
 | テスト | 34 passed (9 property + 25 unit), Coverage 100% |
 | ビルド | Build successful |
+
+---
+
+# Task 9: JSON-LD解析の実装
+
+## Plan
+
+### Phase 1: Infrastructure
+- [x] pnpm-workspace.yaml, tsconfig.base.json, root package.json 更新
+- [x] packages/shared: BookData 型定義 + ISBN正規化ユーティリティ (TDD)
+- [x] packages/extension: パッケージ基盤 (package.json, tsconfig, vitest.config)
+
+### Phase 2: Implementation (TDD - Red → Green → Refactor)
+- [x] extractJsonLd() - JSON-LDブロック抽出関数
+- [x] findBookData() - Book型オブジェクト検索・抽出関数
+- [x] ISBN正規化処理
+- [x] 必須フィールド検証
+
+### Phase 3: Property Tests
+- [x] Property 1: JSON-LD解析の完全性 (Req 1.2)
+- [x] Property 2: ISBN正規化の一貫性 (Req 1.4)
+- [x] Property 3: ISBN欠落時の登録拒否 (Req 1.3)
+- [x] Property 4: 複数JSON-LDブロックの処理 (Req 1.5)
+
+### Phase 4: Quality & Delivery
+- [x] lint / typecheck / test / build すべてパス
+- [x] コミット・プッシュ・PR作成
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| typecheck | Success (shared, server, extension) |
+| テスト | 215 passed (shared 14 + server 116 + extension 85) |
+| カバレッジ | 80%+ (閾値クリア) |
+
+## Notes
+- TDD: テストファースト、Red→Green→Refactor
+- fast-check: 各プロパティ100回以上の反復
+- カバレッジ: 80%以上

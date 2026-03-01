@@ -129,46 +129,46 @@
     - `pnpm typecheck` が全パッケージで No errors になること
     - server / extension が `@techbook-ledger/shared` を正しく解決できること
 
-- [ ] 8. ホワイトリスト機能の実装
-  - [ ] 8.1 ホワイトリストマッチングの実装
+- [x] 8. ホワイトリスト機能の実装
+  - [x] 8.1 ホワイトリストマッチングの実装
     - isWhitelistedSite()関数
     - ワイルドカードパターンマッチング
     - デフォルトホワイトリスト（amazon.co.jp, gihyo.jp）
     - _Requirements: 2.1, 2.2, 2.3, 2.4_
-  
-  - [ ] 8.2 ホワイトリストのプロパティテスト
+
+  - [x] 8.2 ホワイトリストのプロパティテスト
     - **Property 5: ホワイトリスト外サイトの機能無効化**
     - **Validates: Requirements 2.2**
-  
-  - [ ] 8.3 ホワイトリストのプロパティテスト
+
+  - [x] 8.3 ホワイトリストのプロパティテスト
     - **Property 6: ホワイトリスト内サイトのUI表示**
     - **Validates: Requirements 2.3**
-  
-  - [ ] 8.4 ホワイトリストのプロパティテスト
+
+  - [x] 8.4 ホワイトリストのプロパティテスト
     - **Property 7: ワイルドカードドメインマッチング**
     - **Validates: Requirements 2.4**
 
-- [ ] 9. JSON-LD解析の実装
-  - [ ] 9.1 Content Scriptの実装
+- [x] 9. JSON-LD解析の実装
+  - [x] 9.1 Content Scriptの実装
     - extractJsonLd()関数: ページ内のJSON-LDブロック抽出
     - findBookData()関数: Book型オブジェクト検索と抽出
     - ISBN正規化処理
     - 必須フィールド検証
     - _Requirements: 1.1, 1.2, 1.3, 1.4, 1.5_
-  
-  - [ ] 9.2 JSON-LD解析のプロパティテスト
+
+  - [x] 9.2 JSON-LD解析のプロパティテスト
     - **Property 1: JSON-LD解析の完全性**
     - **Validates: Requirements 1.2**
-  
-  - [ ] 9.3 ISBN正規化のプロパティテスト
+
+  - [x] 9.3 ISBN正規化のプロパティテスト
     - **Property 2: ISBN正規化の一貫性**
     - **Validates: Requirements 1.4**
-  
-  - [ ] 9.4 ISBN検証のプロパティテスト
+
+  - [x] 9.4 ISBN検証のプロパティテスト
     - **Property 3: ISBN欠落時の登録拒否**
     - **Validates: Requirements 1.3**
-  
-  - [ ] 9.5 複数JSON-LDブロック処理のプロパティテスト
+
+  - [x] 9.5 複数JSON-LDブロック処理のプロパティテスト
     - **Property 4: 複数JSON-LDブロックの処理**
     - **Validates: Requirements 1.5**
 
@@ -205,20 +205,20 @@
     - レスポンス解析のテスト
     - _Requirements: 7.2_
 
-- [ ] 12. Settings Pageの実装
-  - [ ] 12.1 Settings UIの作成
+- [x] 12. Settings Pageの実装
+  - [x] 12.1 Settings UIの作成
     - サーバーエンドポイント設定フォーム
     - ホワイトリスト編集UI
     - 保存ボタンと検証
     - _Requirements: 10.2, 10.3, 10.4_
-  
-  - [ ] 12.2 Settings ロジックの実装
+
+  - [x] 12.2 Settings ロジックの実装
     - validateEndpoint()関数: URL形式検証
     - saveSettings()関数: Extension Storageへの保存
     - 設定の即時反映
     - _Requirements: 10.1, 10.3, 10.5_
-  
-  - [ ] 12.3 Settings検証のプロパティテスト
+
+  - [x] 12.3 Settings検証のプロパティテスト
     - **Property 19: エンドポイント形式検証**
     - **Validates: Requirements 10.3**
 

@@ -377,3 +377,71 @@
 | error-messages.ts | 100%/100%/100%/100% |
 | popup-state.ts | 100%/100%/100%/100% |
 | ビルド | Build successful (shared, server, extension) |
+
+---
+
+# Task 14: Checkpoint - コンポーネント統合前の確認
+
+## 確認項目
+
+- [x] 全テスト通過: 372 passed (shared 14 + server 120 + extension 238)
+- [x] lint: 0 errors, 0 warnings
+- [x] typecheck: Success (shared, server, extension)
+- [x] カバレッジ: server 87.76%, extension 91.13% (閾値 80% クリア)
+- [x] ビルド: Build successful (shared, server, extension)
+- [x] Property テスト 20/20 完備 (Property 15 を本タスクで追加)
+
+## 各コンポーネントの独立動作確認
+
+### packages/shared (型定義 + ISBN ユーティリティ)
+- 14 tests passed (unit 9 + property 5)
+- `normalizeIsbn()`, `removeHyphens()` 正常動作
+- server / extension から正しく型参照可能
+
+### packages/server (Express API サーバー)
+- 120 tests passed (unit 87 + property 33)
+- カバレッジ: 87.76% stmts / 96.8% branch / 95.45% funcs
+- Notion API エラー分類 (Auth/RateLimit/Connection) 正常動作
+- ISBN ロック (アトミック重複チェック) 正常動作
+- リクエストバリデーション正常動作
+- Property 10-15, 16-17 全てパス
+
+### packages/extension (Chrome Manifest v3 拡張機能)
+- 238 tests passed (unit 211 + property 27)
+- カバレッジ: 91.13% stmts / 93.19% branch / 93.33% funcs
+- JSON-LD パーサー正常動作 (Property 1-4)
+- ホワイトリスト正常動作 (Property 5-7)
+- Popup UI 正常動作 (状態管理 + レンダリング)
+- Service Worker 正常動作 (fetch + メッセージリスナー)
+- Settings ページ正常動作 (Property 19)
+- Extension Storage 正常動作 (Property 20)
+- エラーメッセージ正常動作 (Property 18)
+
+### カバレッジ低ファイルの分析
+
+| ファイル | カバレッジ | 理由 |
+|---------|----------|------|
+| content/index.ts | 0% | プレースホルダ (Task 15 で実装予定) |
+| popup/messages.ts | 0% | 型定義のみ、ランタイムコードなし |
+| popup/popup.ts | 78.2% | autoInit + Chrome API デフォルト実装 (DI で代替テスト済み) |
+| settings/settings.ts | 87.64% | autoInit 部分のみ未カバー |
+
+### 追加実施: Property 15 (Notion API エラー変換)
+
+設計書の 20 Property テストを照合した結果、Property 15 が未実装だったため TDD で追加。
+- NotionAuthError -> 500 変換テスト (100 runs)
+- NotionRateLimitError -> 429 変換テスト (100 runs)
+- NotionConnectionError -> 503 変換テスト (100 runs)
+- 予期しないエラー -> 500 (raw message 非露出) テスト (100 runs)
+
+## Review
+
+### 定量品質確認フォーマット
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 372 passed (shared 14, server 120, extension 238) |
+| カバレッジ | server 87.76%, extension 91.13% |
+| ビルド | Build successful (shared, server, extension) |

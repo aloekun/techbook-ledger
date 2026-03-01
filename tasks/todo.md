@@ -315,3 +315,31 @@
 | テスト | 170 passed (extension 54, server 116) |
 | カバレッジ | settings.ts 94.59%/84.37%/100%/94.59%, 全体 96.22% |
 | ビルド | Build successful (shared, server, extension) |
+
+---
+
+# Task 11: Service Workerの実装
+
+## Plan
+- [x] 11.2 Service Worker ユニットテスト作成 (tests/unit/service-worker.test.ts) - RED
+  - registerBook(): 成功/重複/400/429/500/503/ネットワークエラー/非JSONレスポンス
+  - parseRegistrationResponse(): 有効レスポンス/オプショナルフィールド/不正データ
+  - isRegisterBookMessage(): 有効/無効メッセージ判定
+  - setupMessageListener(): リスナー登録/REGISTER_BOOK処理/無関係メッセージ無視/エラー処理
+- [x] 11.1 Service Worker ロジックの実装 (src/background/service-worker.ts) - GREEN
+  - registerBook(): Extension StorageからserverEndpoint取得、fetch POST、レスポンス解析
+  - parseRegistrationResponse(): 防御的パース (unknown -> RegistrationResponse)
+  - isRegisterBookMessage(): 型ガード
+  - setupMessageListener(): chrome.runtime.onMessage リスナー登録
+  - DI パターン (ServiceWorkerDeps) でテスタビリティ確保
+- [x] 品質確認 (lint, typecheck, test, coverage, build)
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 198 passed (extension 82 (32 new), server 116) |
+| カバレッジ | service-worker.ts 95.4%/93.33%/100%/95.4%, 全体 90.16% |
+| ビルド | Build successful (shared, server, extension) |

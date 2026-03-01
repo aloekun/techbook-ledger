@@ -192,15 +192,15 @@
     - 登録フロー全体のテスト
     - _Requirements: 9.1, 9.2, 9.3, 9.4_
 
-- [ ] 11. Service Workerの実装
-  - [ ] 11.1 Service Workerロジックの実装
+- [x] 11. Service Workerの実装
+  - [x] 11.1 Service Workerロジックの実装
     - registerBook()関数: Local_Serverへのリクエスト送信
     - 設定読込（Extension Storage）
     - エラーハンドリング（サーバー未起動、ネットワークエラー）
     - Popup UIへのレスポンス返却
     - _Requirements: 3.1, 4.2, 7.2_
-  
-  - [ ] 11.2 Service Workerのユニットテスト
+
+  - [x] 11.2 Service Workerのユニットテスト
     - サーバー接続エラー処理のテスト
     - レスポンス解析のテスト
     - _Requirements: 7.2_

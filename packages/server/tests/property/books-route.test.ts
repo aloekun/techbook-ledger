@@ -47,14 +47,11 @@ describe("Feature: tech-book-decision-support, Property 10: 新規レコード�
     vi.clearAllMocks();
   });
 
-  it("should create a new record in Notion for all BookData with non-existing ISBN", async () => {
+  it("should return 201 for all BookData when registerIfAbsent returns created: true", async () => {
     await fc.assert(
       fc.asyncProperty(bookDataArb, notionUrlArb, async (bookData, notionUrl) => {
-        const createBookRecord = vi.fn().mockResolvedValue(notionUrl);
-        const mockService: BookService = {
-          queryByIsbn: vi.fn().mockResolvedValue(null),
-          createBookRecord,
-        };
+        const registerIfAbsent = vi.fn().mockResolvedValue({ created: true, notionUrl });
+        const mockService: BookService = { registerIfAbsent };
         const app = createTestApp(mockService);
 
         const response = await request(app)
@@ -64,24 +61,18 @@ describe("Feature: tech-book-decision-support, Property 10: 新規レコード�
         expect(response.status).toBe(201);
         expect(response.body.success).toBe(true);
         expect(response.body.notionUrl).toBe(notionUrl);
-        expect(createBookRecord).toHaveBeenCalledTimes(1);
-        expect(createBookRecord).toHaveBeenCalledWith(bookData);
+        expect(registerIfAbsent).toHaveBeenCalledTimes(1);
+        expect(registerIfAbsent).toHaveBeenCalledWith(bookData);
       }),
       { numRuns: 100 },
     );
   });
 
-  it("should not create a record when ISBN already exists", async () => {
+  it("should return 200 with isDuplicate when registerIfAbsent returns created: false", async () => {
     await fc.assert(
       fc.asyncProperty(bookDataArb, notionUrlArb, async (bookData, existingUrl) => {
-        const createBookRecord = vi.fn();
-        const mockService: BookService = {
-          queryByIsbn: vi.fn().mockResolvedValue({
-            id: "existing-id",
-            url: existingUrl,
-          }),
-          createBookRecord,
-        };
+        const registerIfAbsent = vi.fn().mockResolvedValue({ created: false, notionUrl: existingUrl });
+        const mockService: BookService = { registerIfAbsent };
         const app = createTestApp(mockService);
 
         const response = await request(app)
@@ -90,7 +81,7 @@ describe("Feature: tech-book-decision-support, Property 10: 新規レコード�
 
         expect(response.status).toBe(200);
         expect(response.body.isDuplicate).toBe(true);
-        expect(createBookRecord).not.toHaveBeenCalled();
+        expect(response.body.notionUrl).toBe(existingUrl);
       }),
       { numRuns: 100 },
     );
@@ -102,15 +93,14 @@ describe("Feature: tech-book-decision-support, Property 11: タイムスタン�
     vi.clearAllMocks();
   });
 
-  it("should pass BookData to createBookRecord which auto-assigns timestamp", async () => {
+  it("should pass BookData to registerIfAbsent which auto-assigns timestamp internally", async () => {
     await fc.assert(
       fc.asyncProperty(bookDataArb, async (bookData) => {
         let capturedBookData: BookData | undefined;
         const mockService: BookService = {
-          queryByIsbn: vi.fn().mockResolvedValue(null),
-          createBookRecord: vi.fn().mockImplementation(async (data: BookData) => {
+          registerIfAbsent: vi.fn().mockImplementation(async (data: BookData) => {
             capturedBookData = data;
-            return "https://www.notion.so/new-page";
+            return { created: true, notionUrl: "https://www.notion.so/new-page" };
           }),
         };
         const app = createTestApp(mockService);
@@ -122,8 +112,6 @@ describe("Feature: tech-book-decision-support, Property 11: タイムスタン�
         expect(response.status).toBe(201);
         expect(capturedBookData).toBeDefined();
         expect(capturedBookData).toEqual(bookData);
-        // The BookData passed to createBookRecord should NOT contain registrationDate
-        // (the server/NotionBookClient is responsible for adding timestamp internally)
         expect(capturedBookData).not.toHaveProperty("registrationDate");
       }),
       { numRuns: 100 },
@@ -141,10 +129,9 @@ describe("Feature: tech-book-decision-support, Property 13: 認証情報の非�
     await fc.assert(
       fc.asyncProperty(bookDataArb, async (bookData) => {
         const mockService: BookService = {
-          queryByIsbn: vi.fn().mockResolvedValue(null),
-          createBookRecord: vi
+          registerIfAbsent: vi
             .fn()
-            .mockResolvedValue("https://www.notion.so/new-page"),
+            .mockResolvedValue({ created: true, notionUrl: "https://www.notion.so/new-page" }),
         };
         const app = createTestApp(mockService);
 
@@ -170,11 +157,10 @@ describe("Feature: tech-book-decision-support, Property 13: 認証情報の非�
     await fc.assert(
       fc.asyncProperty(bookDataArb, async (bookData) => {
         const mockService: BookService = {
-          queryByIsbn: vi.fn().mockResolvedValue({
-            id: "page-id",
-            url: "https://www.notion.so/page-id",
+          registerIfAbsent: vi.fn().mockResolvedValue({
+            created: false,
+            notionUrl: "https://www.notion.so/page-id",
           }),
-          createBookRecord: vi.fn(),
         };
         const app = createTestApp(mockService);
 
@@ -205,8 +191,7 @@ describe("Feature: tech-book-decision-support, Property 13: 認証情報の非�
 
     for (const error of errorTypes) {
       const mockService: BookService = {
-        queryByIsbn: vi.fn().mockRejectedValue(error),
-        createBookRecord: vi.fn(),
+        registerIfAbsent: vi.fn().mockRejectedValue(error),
       };
       const app = createTestApp(mockService);
 

@@ -120,3 +120,25 @@
 | type-check | ✅ Success (shared, server, extension) |
 | テスト | ✅ 106 passed (server 84 + extension 22) |
 | ビルド | ✅ shared dist/ 生成確認 (.d.ts x2) |
+
+---
+
+# Task 5.6: 重複チェックのアトミック化
+
+## Plan
+- [x] isbn-lock.ts の TDD (RED → GREEN)
+- [x] RegisterResult 型を shared に追加
+- [x] NotionBookClient.registerIfAbsent() の TDD (RED → GREEN)
+- [x] BookService インターフェースを registerIfAbsent に変更
+- [x] ルートハンドラを registerIfAbsent に切り替え
+- [x] books-route テスト・property テストを更新
+- [x] 品質確認 (lint, typecheck, test, coverage)
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server) |
+| テスト | 116 passed (10 suites) |
+| カバレッジ | 87.76% (閾値 80% クリア) |

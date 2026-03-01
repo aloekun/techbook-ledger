@@ -90,11 +90,11 @@
 
 | チェック | 結果 |
 |---------|------|
-| lint | ✅ 0 errors, 0 warnings |
-| type-check | ✅ Success (shared, server, extension) |
-| テスト | ✅ 100 passed (server 84 + extension 16) |
-| カバレッジ | ✅ config.ts 100%/100%/100%/100% |
-| ビルド | ✅ vite build successful (dist/ 生成確認) |
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 100 passed (server 84 + extension 16) |
+| カバレッジ | config.ts 100%/100%/100%/100% |
+| ビルド | vite build successful (dist/ 生成確認) |
 
 ## PR #11 レビュー対応
 
@@ -116,10 +116,10 @@
 
 | チェック | 結果 |
 |---------|------|
-| lint | ✅ 0 errors, 0 warnings |
-| type-check | ✅ Success (shared, server, extension) |
-| テスト | ✅ 106 passed (server 84 + extension 22) |
-| ビルド | ✅ shared dist/ 生成確認 (.d.ts x2) |
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 106 passed (server 84 + extension 22) |
+| ビルド | shared dist/ 生成確認 (.d.ts x2) |
 
 ---
 
@@ -169,3 +169,41 @@
 | 正常登録 | POST /api/books -> 201 Created, Notion にページ作成確認 |
 | 重複検出 | 同一 ISBN 再送信 -> 200, isDuplicate: true |
 | バリデーション | 必須フィールド欠落 -> 400, 欠落フィールド名を返却 |
+
+---
+
+# Task 8: ホワイトリスト機能の実装
+
+## Plan
+
+- [x] 8.1 ホワイトリストマッチングの実装
+  - `matchesWhitelistPattern()` 関数: 単一パターンとホスト名のマッチング
+  - `isWhitelistedSite()` 関数: ホワイトリスト全体との照合
+  - ワイルドカードパターンマッチング (`*.domain`)
+  - デフォルトホワイトリスト（amazon.co.jp, gihyo.jp, *.amazon.co.jp）
+  - Requirements: 2.1, 2.2, 2.3, 2.4
+
+- [x] 8.2 Property 5: ホワイトリスト外サイトの機能無効化
+  - ホワイトリスト外ドメインで `isWhitelistedSite()` が false を返す
+  - 空のホワイトリストですべてのドメインが false を返す
+  - Validates: Requirements 2.2
+
+- [x] 8.3 Property 6: ホワイトリスト内サイトのUI表示
+  - デフォルトホワイトリスト内ドメインで true を返す
+  - カスタムホワイトリストの完全一致で true を返す
+  - Validates: Requirements 2.3
+
+- [x] 8.4 Property 7: ワイルドカードドメインマッチング
+  - `*.domain` パターンが `sub.domain` にマッチ
+  - `*.domain` パターンが `domain` 自体にはマッチしない
+  - 完全一致パターンが正確に動作する
+  - Validates: Requirements 2.4
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | Error 0, Warning 0 |
+| type-check | Success (shared + extension) |
+| テスト | 34 passed (9 property + 25 unit), Coverage 100% |
+| ビルド | Build successful |

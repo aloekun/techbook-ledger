@@ -5,4 +5,9 @@ export {
   type DuplicateCheckResult,
   type RegisterResult,
 } from "./api.js";
-export { type ServerConfig, type ExtensionConfig } from "./config.js";
+export {
+  type ServerConfig,
+  type ExtensionConfig,
+  DEFAULT_WHITELIST,
+  DEFAULT_EXTENSION_CONFIG,
+} from "./config.js";

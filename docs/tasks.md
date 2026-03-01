@@ -103,7 +103,7 @@
     - BookService に registerIfAbsent() 的なアトミック操作を導入検討
     - _Requirements: 6.1_
 
-- [ ] 6. Checkpoint - ローカルサーバーの動作確認
+- [x] 6. Checkpoint - ローカルサーバーの動作確認
   - すべてのテストが通ることを確認
   - 手動でcurlコマンドでAPIをテスト
   - 質問があればユーザーに確認

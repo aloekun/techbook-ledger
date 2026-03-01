@@ -172,22 +172,22 @@
     - **Property 4: 複数JSON-LDブロックの処理**
     - **Validates: Requirements 1.5**
 
-- [ ] 10. Popup UIの実装
-  - [ ] 10.1 Popup HTMLとCSSの作成
+- [x] 10. Popup UIの実装
+  - [x] 10.1 Popup HTMLとCSSの作成
     - 書籍情報表示エリア
     - 登録ボタン
     - ステータス表示（inactive/ready/loading/success/error）
     - _Requirements: 9.1, 9.2, 9.3, 9.5_
-  
-  - [ ] 10.2 Popup ロジックの実装
+
+  - [x] 10.2 Popup ロジックの実装
     - Content Scriptから書籍データ取得
     - 登録ボタンクリックハンドラ
     - Service Workerとの通信
     - 状態管理とUI更新
     - 3秒間の結果表示とリセット
     - _Requirements: 3.1, 3.6, 3.7, 9.1, 9.3, 9.4, 9.5_
-  
-  - [ ] 10.3 Popup UIのユニットテスト
+
+  - [x] 10.3 Popup UIのユニットテスト
     - 各状態での表示確認
     - 登録フロー全体のテスト
     - _Requirements: 9.1, 9.2, 9.3, 9.4_

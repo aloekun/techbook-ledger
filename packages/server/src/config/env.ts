@@ -21,9 +21,39 @@ export function loadServerConfig(): ServerConfig {
   if (Number.isNaN(port) || port < 1 || port > 65535) {
     throw new Error("PORT は 1〜65535 の数値で指定してください");
   }
+  const allowedExtensionOrigins = (
+    process.env["ALLOWED_EXTENSION_ORIGINS"] ?? ""
+  )
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
+
+  if (allowedExtensionOrigins.length === 0) {
+    throw new Error(
+      "環境変数 ALLOWED_EXTENSION_ORIGINS が設定されていません。" +
+        "chrome-extension://<拡張機能ID> の形式でカンマ区切りで指定してください",
+    );
+  }
+
+  const invalidOrigin = allowedExtensionOrigins.find((origin) => {
+    try {
+      const parsed = new URL(origin);
+      return parsed.protocol !== "chrome-extension:";
+    } catch {
+      return true;
+    }
+  });
+  if (invalidOrigin) {
+    throw new Error(
+      `ALLOWED_EXTENSION_ORIGINS に不正な値があります: ${invalidOrigin}。` +
+        "chrome-extension://<拡張機能ID> の形式で指定してください",
+    );
+  }
+
   return {
     port,
     notionToken: requireEnv("NOTION_TOKEN"),
     notionDatabaseId: requireEnv("NOTION_DATABASE_ID"),
+    allowedExtensionOrigins,
   };
 }

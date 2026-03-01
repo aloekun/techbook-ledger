@@ -248,3 +248,35 @@
 - TDD: テストファースト、Red→Green→Refactor
 - fast-check: 各プロパティ100回以上の反復
 - カバレッジ: 80%以上
+
+---
+
+# Task 12: Settings Pageの実装
+
+## Plan
+- [x] 12.3 Property 19: エンドポイント形式検証テストの作成 (tests/property/settings.test.ts) - RED
+- [x] 12.1/12.2 ユニットテスト作成 (tests/unit/settings.test.ts) - RED
+  - validateEndpoint() のバリデーション検証
+  - Settings ページ初期化・フォーム操作・保存フロー検証
+- [x] 12.2 validateEndpoint() 実装 (src/settings/settings.ts) - GREEN
+  - localhost / 127.0.0.1 の HTTP URL のみ受け入れ
+  - パス・クエリ・フラグメント・不正ポートの拒否
+- [x] 12.2 initSettings() 実装 (src/settings/settings.ts) - GREEN
+  - Extension Storage から設定読込・フォーム反映
+  - submit ハンドラでバリデーション → 保存 → メッセージ表示
+  - 空行・空白のトリム、設定の即時反映
+- [x] 12.1 Settings UI の作成 (index.html, settings.css)
+  - エンドポイント入力、ホワイトリスト編集、保存ボタン
+  - ヒントテキスト、成功/エラーメッセージスタイル
+- [x] 品質確認 (lint, typecheck, test, coverage, build)
+- [ ] E2E テスト (deferred: Playwright 基盤構築後に実施)
+
+## Review
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 170 passed (extension 54, server 116) |
+| カバレッジ | settings.ts 94.59%/84.37%/100%/94.59%, 全体 96.22% |
+| ビルド | Build successful (shared, server, extension) |

@@ -28,14 +28,14 @@ pnpm run test:f shared
 pnpm run typecheck:f server
 pnpm run build:f shared
 
-# カバレッジ付きテスト（pnpm exec で直接実行）
+# カバレッジ付きテスト
 pnpm run test:coverage:f server
 
 # 開発サーバー
 pnpm run dev:f server
 
 # 単一テストファイル実行
-pnpm --filter server exec vitest run tests/unit/notion-client.test.ts
+pnpm run test:file server tests/unit/notion-client.test.ts
 ```
 
 **注意**: フィルタスクリプト (`test:f`, `typecheck:f` 等) は `bash -c` + 位置パラメータで実装されている。`--` は付けずに呼び出す。

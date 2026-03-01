@@ -445,3 +445,56 @@
 | テスト | 372 passed (shared 14, server 120, extension 238) |
 | カバレッジ | server 87.76%, extension 91.13% |
 | ビルド | Build successful (shared, server, extension) |
+
+---
+
+# Task 15: システム統合
+
+## Plan
+- [x] 15.1 End-to-Endフローの配線
+  - Content Script (`content/index.ts`) の実装: JSON-LD 解析 + GET_BOOK_DATA メッセージリスナー
+  - Content Script → Popup → Service Worker → Local Server → Notion API の全フロー接続
+  - レスポンスの逆方向フロー (Server → Service Worker → Popup → UI)
+  - TDD: RED → GREEN → REFACTOR サイクル
+  - Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7
+
+- [x] 15.2 統合テスト
+  - サーバー統合テスト (packages/server/tests/integration/registration-flow.test.ts)
+    - 正常登録フロー (Req 3.1, 3.4, 3.5, 3.6): 4 テスト
+    - 重複検出フロー (Req 3.2, 3.3): 3 テスト
+    - バリデーションエラーフロー (Req 4.3): 4 テスト
+    - Notion APIエラーフロー: 4 テスト
+    - CORSセキュリティ (Req 4.2, 8.3): 2 テスト
+    - ヘルスチェック: 1 テスト
+  - Extension統合テスト (packages/extension/tests/integration/e2e-flow.test.ts)
+    - 正常登録フロー (Req 3.1, 3.4, 3.6): 2 テスト
+    - 重複検出フロー (Req 3.2, 3.3): 1 テスト
+    - エラーケース (Req 3.7, 7.1, 7.2, 7.4, 7.5): 6 テスト
+    - データフロー検証: 3 テスト
+  - Content Script ユニットテスト (packages/extension/tests/unit/content-script.test.ts)
+    - setupContentScript: 1 テスト
+    - handleGetBookData: 6 テスト
+    - メッセージリスナー動作: 4 テスト
+
+## Review
+
+### 定量品質確認フォーマット
+
+| チェック | 結果 |
+|---------|------|
+| lint | ✅ 0 errors, 0 warnings |
+| type-check | ✅ Success (shared, server, extension) |
+| テスト | ✅ 414 passed (shared 14, server 138, extension 262) |
+| E2Eテスト | N/A - `pnpm e2e` コマンドは未設定 |
+| カバレッジ | ✅ server 87.76%, extension 91.52% (閾値 80% クリア) |
+| ビルド | ✅ Build successful (shared, server, extension) |
+
+### 新規作成ファイル
+- `packages/extension/src/content/index.ts` - Content Script 実装 (E2Eフロー配線)
+- `packages/extension/tests/unit/content-script.test.ts` - Content Script ユニットテスト (11件)
+- `packages/server/tests/integration/registration-flow.test.ts` - サーバー統合テスト (18件)
+- `packages/extension/tests/integration/e2e-flow.test.ts` - Extension統合テスト (13件)
+
+### テスト増分
+- 新規テスト: 42件 (content-script 11 + server integration 18 + extension integration 13)
+- 合計: 414 passed (前回 372 → 414, +42)

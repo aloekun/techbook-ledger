@@ -1,4 +1,4 @@
-import express, { type Express } from "express";
+import express, { type Express, type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
 import { createBooksRouter, type BookService } from "./routes/books.js";
 
@@ -30,6 +30,24 @@ export function createApp(options: AppOptions): Express {
   });
 
   app.use("/api/books", createBooksRouter(bookService));
+
+  // Global error handler: CORS rejection -> 403, others -> preserve upstream status or 500
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  app.use((err: Error & { status?: number; statusCode?: number }, _req: Request, res: Response, _next: NextFunction) => {
+    if (err.message.includes("is not allowed by CORS")) {
+      res.status(403).json({
+        success: false,
+        message: "許可されていないオリジンからのリクエストです",
+      });
+      return;
+    }
+    const status = err.status ?? err.statusCode ?? 500;
+    const safeStatus = status >= 400 && status < 600 ? status : 500;
+    res.status(safeStatus).json({
+      success: false,
+      message: "予期しないエラーが発生しました",
+    });
+  });
 
   return app;
 }

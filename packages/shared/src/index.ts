@@ -9,3 +9,4 @@ export {
   type ExtensionConfig,
 } from "./types/index.js";
 export { DEFAULT_WHITELIST, DEFAULT_EXTENSION_CONFIG } from "./types/config.js";
+export { normalizeIsbn } from "./utils/isbn.js";

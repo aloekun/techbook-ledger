@@ -56,11 +56,8 @@ afterAll(() => {
 });
 
 // Import after mocking chrome
-const {
-  loadConfig,
-  saveConfig,
-  DEFAULT_CONFIG,
-} = await import("../../src/storage/config.js");
+const { loadConfig, saveConfig, DEFAULT_CONFIG } =
+  await import("../../src/storage/config.js");
 
 describe("Extension Storage: config", () => {
   beforeEach(() => {

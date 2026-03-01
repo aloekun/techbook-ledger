@@ -56,21 +56,18 @@ afterAll(() => {
   vi.unstubAllGlobals();
 });
 
-const { loadConfig, saveConfig, DEFAULT_CONFIG } = await import(
-  "../../src/storage/config.js"
-);
+const { loadConfig, saveConfig, DEFAULT_CONFIG } =
+  await import("../../src/storage/config.js");
 
 // Arbitraries for generating valid ExtensionConfig
 const localhostEndpointArb = fc.oneof(
   fc.integer({ min: 1, max: 65535 }).map((port) => `http://localhost:${port}`),
-  fc
-    .integer({ min: 1, max: 65535 })
-    .map((port) => `http://127.0.0.1:${port}`),
+  fc.integer({ min: 1, max: 65535 }).map((port) => `http://127.0.0.1:${port}`),
 );
 
 const domainArb = fc
   .tuple(
-    fc.stringOf(fc.constantFrom(...("abcdefghijklmnopqrstuvwxyz".split(""))), {
+    fc.stringOf(fc.constantFrom(..."abcdefghijklmnopqrstuvwxyz".split("")), {
       minLength: 2,
       maxLength: 10,
     }),

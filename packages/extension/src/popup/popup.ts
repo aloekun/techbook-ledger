@@ -15,6 +15,7 @@ interface PopupElements {
   readonly statusDiv: HTMLDivElement;
   readonly bookInfoDiv: HTMLDivElement;
   readonly registerBtn: HTMLButtonElement;
+  readonly retryBtn: HTMLButtonElement;
   readonly messageDiv: HTMLDivElement;
 }
 
@@ -41,7 +42,8 @@ const STATUS_TEXT: Record<PopupState["status"], string> = {
 };
 
 function renderState(state: PopupState, elements: PopupElements): void {
-  const { statusDiv, bookInfoDiv, registerBtn, messageDiv } = elements;
+  const { statusDiv, bookInfoDiv, registerBtn, retryBtn, messageDiv } =
+    elements;
 
   // Update status
   for (const cls of STATUS_CLASSES) {
@@ -60,6 +62,9 @@ function renderState(state: PopupState, elements: PopupElements): void {
   // Update register button
   registerBtn.disabled = state.status !== "ready";
 
+  // Update retry button visibility
+  retryBtn.style.display = state.retryable === true ? "block" : "none";
+
   // Update message
   if (state.status === "success" || state.status === "error") {
     messageDiv.textContent = state.message;
@@ -74,18 +79,20 @@ function getPopupElements(): PopupElements | null {
   const statusDiv = document.getElementById("status");
   const bookInfoDiv = document.getElementById("book-info");
   const registerBtn = document.getElementById("register-btn");
+  const retryBtn = document.getElementById("retry-btn");
   const messageDiv = document.getElementById("message");
 
   if (
     !(statusDiv instanceof HTMLDivElement) ||
     !(bookInfoDiv instanceof HTMLDivElement) ||
     !(registerBtn instanceof HTMLButtonElement) ||
+    !(retryBtn instanceof HTMLButtonElement) ||
     !(messageDiv instanceof HTMLDivElement)
   ) {
     return null;
   }
 
-  return { statusDiv, bookInfoDiv, registerBtn, messageDiv };
+  return { statusDiv, bookInfoDiv, registerBtn, retryBtn, messageDiv };
 }
 
 async function defaultGetBookData(): Promise<BookData | null> {
@@ -146,7 +153,7 @@ export async function initPopup(deps?: PopupDeps): Promise<void> {
   const state = derivePopupState(bookData);
   renderState(state, elements);
 
-  if (!bookData) return;
+  if (!bookData || state.status === "error") return;
 
   // Attach click handler for registration
   elements.registerBtn.addEventListener("click", () => {
@@ -172,9 +179,17 @@ async function handleRegister(
         status: "error",
         bookData,
         message: "サーバーとの通信に失敗しました",
+        retryable: true,
       },
       elements,
     );
+
+    // Attach retry handler (one-time)
+    const retryHandler = (): void => {
+      elements.retryBtn.removeEventListener("click", retryHandler);
+      void handleRegister(bookData, elements, registerBook, scheduleReset);
+    };
+    elements.retryBtn.addEventListener("click", retryHandler);
     return;
   }
 

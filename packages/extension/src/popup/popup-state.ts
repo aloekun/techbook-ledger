@@ -1,4 +1,8 @@
 import type { BookData, RegistrationResponse } from "@techbook-ledger/shared";
+import {
+  identifyMissingFields,
+  formatMissingFieldsMessage,
+} from "../utils/error-messages.js";
 
 export type PopupStatus =
   | "inactive"
@@ -11,6 +15,7 @@ export interface PopupState {
   readonly status: PopupStatus;
   readonly bookData: BookData | null;
   readonly message: string;
+  readonly retryable?: boolean;
 }
 
 export function createInitialState(): PopupState {
@@ -25,6 +30,16 @@ export function derivePopupState(bookData: BookData | null): PopupState {
       message: "このページは対応していません",
     };
   }
+
+  const missingFields = identifyMissingFields(bookData);
+  if (missingFields.length > 0) {
+    return {
+      status: "error",
+      bookData,
+      message: formatMissingFieldsMessage(missingFields),
+    };
+  }
+
   return { status: "ready", bookData, message: "" };
 }
 

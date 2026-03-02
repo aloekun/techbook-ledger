@@ -245,14 +245,14 @@
   - [x] 欠落していた Property 15 (Notion APIエラー変換) を追加
   - [x] 質問があればユーザーに確認
 
-- [ ] 15. システム統合
-  - [ ] 15.1 End-to-Endフローの配線
+- [x] 15. システム統合
+  - [x] 15.1 End-to-Endフローの配線
     - Content Script → Popup → Service Worker → Local Server → Notion API
     - すべてのコンポーネント間の通信を接続
     - レスポンスの逆方向フロー
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
-  
-  - [ ] 15.2 統合テスト
+
+  - [x] 15.2 統合テスト
     - 正常登録フローのEnd-to-Endテスト
     - 重複検出フローのEnd-to-Endテスト
     - エラーケースのEnd-to-Endテスト

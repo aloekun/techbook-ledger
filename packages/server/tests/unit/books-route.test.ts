@@ -255,7 +255,9 @@ describe("POST /api/books", () => {
         .set("Origin", "https://malicious-site.com")
         .send(createValidBookData());
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain("許可されていないオリジン");
     });
 
     it("should reject requests from unlisted extension origins", async () => {
@@ -266,7 +268,9 @@ describe("POST /api/books", () => {
         .set("Origin", "chrome-extension://unknownextensionid")
         .send(createValidBookData());
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(403);
+      expect(response.body.success).toBe(false);
+      expect(response.body.message).toContain("許可されていないオリジン");
     });
 
     it("should allow requests with no origin (server-to-server)", async () => {
@@ -293,6 +297,34 @@ describe("POST /api/books", () => {
       expect(mockService.registerIfAbsent).toHaveBeenCalledTimes(1);
       expect(mockService.registerIfAbsent).toHaveBeenCalledWith(bookData);
     });
+  });
+});
+
+describe("global error handler", () => {
+  it("should return 400 for malformed JSON request body", async () => {
+    const mockService = createMockBookService();
+    const app = createTestApp(mockService);
+
+    const response = await request(app)
+      .post("/api/books")
+      .set("Content-Type", "application/json")
+      .send("{ invalid json }");
+
+    expect(response.status).toBe(400);
+    expect(response.body.success).toBe(false);
+    expect(response.body.message).toBe("予期しないエラーが発生しました");
+  });
+
+  it("should not call registerIfAbsent for malformed JSON", async () => {
+    const mockService = createMockBookService();
+    const app = createTestApp(mockService);
+
+    await request(app)
+      .post("/api/books")
+      .set("Content-Type", "application/json")
+      .send("{ invalid json }");
+
+    expect(mockService.registerIfAbsent).not.toHaveBeenCalled();
   });
 });
 

@@ -264,6 +264,35 @@
   - [x] README.mdの作成（セットアップ手順、使用方法、アーキテクチャ、手動テスト手順）
   - [x] 質問があればユーザーに確認
 
+---
+
+## Auto Review Fix (Task 17)
+
+Code Rabbit のレビュー指摘を Claude Code Action で自動修正する仕組みの導入。
+詳細仕様: [docs/auto-review-fix.md](auto-review-fix.md)
+
+- [ ] 17.1 GitHub Actions ワークフローの作成
+  - [ ] `.github/workflows/fix-review.yml` を作成
+  - [ ] トリガー設定（`pull_request_review` / `submitted` / `changes_requested`）
+  - [ ] Code Rabbit のレビューのみにフィルタ
+  - [ ] ループカウント取得ステップ（PR body メタ情報方式）
+  - [ ] 上限到達時の通知ステップ（コメント + `needs-human-review` ラベル）
+  - [ ] Claude Code Action 実行ステップ（プロンプト制約含む）
+  - [ ] ループカウント更新ステップ
+
+- [ ] 17.2 リポジトリ設定（手動）
+  - [ ] GitHub Secrets に `ANTHROPIC_API_KEY` を登録
+  - [ ] Branch protection で CI チェック必須を設定
+  - [ ] GitHub Auto-merge を有効化
+  - [ ] Code Rabbit の再レビュー設定を確認
+
+- [ ] 17.3 動作確認
+  - [ ] テスト用 PR を作成し、Code Rabbit のレビューが発火することを確認
+  - [ ] Claude Code Action が修正コミットをプッシュすることを確認
+  - [ ] ループカウントが PR body に正しく記録されることを確認
+  - [ ] 上限到達時にコメント + ラベルが付与されることを確認
+  - [ ] Auto-merge が正しく動作することを確認
+
 ## Notes
 
 - 各タスクは特定の要件を参照してトレーサビリティを確保

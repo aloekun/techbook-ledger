@@ -4,3 +4,4 @@ reviews:
     enabled: true
     base_branches:
       - "develop"
+  request_changes_workflow: true

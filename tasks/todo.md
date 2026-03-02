@@ -498,3 +498,46 @@
 ### テスト増分
 - 新規テスト: 42件 (content-script 11 + server integration 18 + extension integration 13)
 - 合計: 414 passed (前回 372 → 414, +42)
+
+---
+
+# Task 16: 最終チェックポイント
+
+## Plan
+- [x] 全品質チェック実行 (lint, typecheck, test, coverage, build)
+- [x] README.md の作成
+  - プロジェクト概要・アーキテクチャ図
+  - 前提条件
+  - セットアップ手順 (Notion Integration 作成、Database 作成、環境変数設定、ビルド、サーバー起動、拡張機能インストール)
+  - 使い方 (書籍登録フロー、設定変更)
+  - 対応サイト一覧
+  - 開発者向け情報 (ディレクトリ構成、コマンド、テスト、API エンドポイント)
+  - 手動テスト手順 (5 シナリオ)
+  - セキュリティ設計
+- [x] 手動テスト手順の文書化 (README.md 内に記載)
+- [x] docs/tasks.md の Task 16 を完了済みに更新
+
+## Review
+
+### 定量品質確認フォーマット
+
+| チェック | 結果 |
+|---------|------|
+| lint | ✅ 0 errors, 0 warnings |
+| type-check | ✅ Success (shared, server, extension) |
+| テスト | ✅ 416 passed (shared 14, server 140, extension 262) |
+| カバレッジ | ✅ server 88.22%, extension 91.52% (閾値 80% クリア) |
+| ビルド | ✅ Build successful (shared, server, extension) |
+
+### 新規作成ファイル
+- `README.md` - プロジェクト README (セットアップ手順、使用方法、アーキテクチャ、API 仕様、手動テスト手順、セキュリティ)
+
+### テスト増分
+- テスト数変化: 414 → 416 (+2, server 138→140)
+- 全 20 Property テスト完備
+
+### 全タスク完了状況
+- Task 1-16: 全て完了
+- Property 1-20: 全て実装・通過
+- テスト総数: 416 (shared 14, server 140, extension 262)
+- カバレッジ: server 88.22%, extension 91.52%

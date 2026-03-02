@@ -541,3 +541,53 @@
 - Property 1-20: 全て実装・通過
 - テスト総数: 416 (shared 14, server 140, extension 262)
 - カバレッジ: server 88.22%, extension 91.52%
+
+---
+
+# Task 17: Auto Review Fix ワークフロー
+
+## Plan
+- [x] 17.1 ループカウント管理ロジックの TDD
+  - [x] ユニットテスト作成 (tests/unit/loop-count.test.ts) - RED
+  - [x] プロパティテスト作成 (tests/property/loop-count.property.test.ts) - RED
+  - [x] 実装 (src/utils/loop-count.ts) - GREEN
+  - [x] リファクタリング・品質確認 - REFACTOR
+- [x] 17.1 GitHub Actions ワークフロー作成
+  - [x] `.github/workflows/fix-review.yml` を作成
+  - [x] トリガー設定 (pull_request_review / submitted / changes_requested)
+  - [x] Code Rabbit フィルタ (coderabbitai[bot] + changes_requested)
+  - [x] ループカウント取得ステップ (PR body メタ情報)
+  - [x] 上限到達時の通知ステップ (コメント + needs-human-review ラベル)
+  - [x] Claude Code Action 実行ステップ (プロンプト制約含む)
+  - [x] ループカウント更新ステップ
+- [x] shared パッケージのカバレッジ改善
+  - [x] 型定義のみファイルをカバレッジ除外に追加
+  - [x] config.ts のデフォルト値テスト追加
+
+## Review
+
+### 定量品質確認フォーマット
+
+| チェック | 結果 |
+|---------|------|
+| lint | 0 errors, 0 warnings |
+| type-check | Success (shared, server, extension) |
+| テスト | 451 passed (shared 49, server 140, extension 262) |
+| カバレッジ | shared 100%, server 87%+, extension 91%+ |
+| ビルド | Build successful (shared, server, extension) |
+
+### 新規作成ファイル
+- `.github/workflows/fix-review.yml` - Auto Fix Review ワークフロー
+- `packages/shared/src/utils/loop-count.ts` - ループカウント管理ロジック
+- `packages/shared/tests/unit/loop-count.test.ts` - ユニットテスト (22 cases)
+- `packages/shared/tests/property/loop-count.property.test.ts` - プロパティテスト (7 cases, 100 runs each)
+- `packages/shared/tests/unit/config.test.ts` - デフォルト設定テスト (6 cases)
+
+### 変更ファイル
+- `packages/shared/vitest.config.ts` - 型定義のみファイルをカバレッジ除外に追加
+- `docs/tasks.md` - Task 17.1 チェックボックス更新
+
+### テスト増分
+- 新規テスト: 35 件 (loop-count unit 22 + property 7 + config 6)
+- 合計: 451 passed (前回 416 → 451, +35)
+- shared パッケージカバレッジ: 100% (全メトリクス)

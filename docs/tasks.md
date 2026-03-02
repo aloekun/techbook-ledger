@@ -271,20 +271,20 @@
 Code Rabbit のレビュー指摘を Claude Code Action で自動修正する仕組みの導入。
 詳細仕様: [docs/auto-review-fix.md](auto-review-fix.md)
 
-- [ ] 17.1 GitHub Actions ワークフローの作成
-  - [ ] `.github/workflows/fix-review.yml` を作成
-  - [ ] トリガー設定（`pull_request_review` / `submitted` / `changes_requested`）
-  - [ ] Code Rabbit のレビューのみにフィルタ
-  - [ ] ループカウント取得ステップ（PR body メタ情報方式）
-  - [ ] 上限到達時の通知ステップ（コメント + `needs-human-review` ラベル）
-  - [ ] Claude Code Action 実行ステップ（プロンプト制約含む）
-  - [ ] ループカウント更新ステップ
+- [x] 17.1 GitHub Actions ワークフローの作成
+  - [x] `.github/workflows/fix-review.yml` を作成
+  - [x] トリガー設定（`pull_request_review` / `submitted` / `changes_requested`）
+  - [x] Code Rabbit のレビューのみにフィルタ
+  - [x] ループカウント取得ステップ（PR body メタ情報方式）
+  - [x] 上限到達時の通知ステップ（コメント + `needs-human-review` ラベル）
+  - [x] Claude Code Action 実行ステップ（プロンプト制約含む）
+  - [x] ループカウント更新ステップ
 
-- [ ] 17.2 リポジトリ設定（手動）
-  - [ ] GitHub Secrets に `ANTHROPIC_API_KEY` を登録
-  - [ ] Branch protection で CI チェック必須を設定
-  - [ ] GitHub Auto-merge を有効化
-  - [ ] Code Rabbit の再レビュー設定を確認
+- [x] 17.2 リポジトリ設定（手動）
+  - [x] GitHub Secrets に `ANTHROPIC_API_KEY` を登録
+  - [ ] Branch protection で CI チェック必須を設定（CI ワークフロー未実行のため保留）
+  - [x] GitHub Auto-merge を有効化
+  - [x] Code Rabbit の再レビュー設定を確認
 
 - [ ] 17.3 動作確認
   - [ ] テスト用 PR を作成し、Code Rabbit のレビューが発火することを確認

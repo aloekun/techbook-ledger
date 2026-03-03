@@ -14,7 +14,8 @@ jobs:
   fix-review:
     if: >
       github.event.review.user.login == 'coderabbitai[bot]'
-      && github.event.review.state == 'changes_requested'
+      && (github.event.review.state == 'changes_requested'
+        || github.event.review.state == 'commented')
     runs-on: ubuntu-latest
 
     steps:

@@ -3,6 +3,7 @@ name: Auto Fix Review
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -49,6 +50,7 @@ jobs:
         uses: anthropics/claude-code-action@64c7a0ef71df67b14cb4471f4d9c8565c61042bf # v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           allowed_bots: "coderabbitai[bot]"
           prompt: |
             This PR has received review feedback from Code Rabbit.

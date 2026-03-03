@@ -5,6 +5,10 @@ on:
     types: [submitted]
   workflow_dispatch:
 
+concurrency:
+  group: autofix-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
 permissions:
   contents: write
   pull-requests: write
@@ -17,9 +21,29 @@ jobs:
       && (github.event.review.state == 'changes_requested'
         || github.event.review.state == 'commented')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
+      - name: Check for actionable comments
+        id: check-actionable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          REVIEW_ID=${{ github.event.review.id }}
+          REPO="${{ github.repository }}"
+          COMMENTS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews/$REVIEW_ID/comments" --jq 'length')
+          echo "comment_count=$COMMENTS" >> "$GITHUB_OUTPUT"
+          if [ "$COMMENTS" -eq 0 ]; then
+            echo "has_actionable=false" >> "$GITHUB_OUTPUT"
+            echo "No inline review comments found. Skipping."
+          else
+            echo "has_actionable=true" >> "$GITHUB_OUTPUT"
+            echo "Found $COMMENTS inline review comments."
+          fi
+
       - name: Check loop count
+        if: steps.check-actionable.outputs.has_actionable == 'true'
         id: check-count
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -36,7 +60,9 @@ jobs:
           fi
 
       - name: Notify limit reached
-        if: steps.check-count.outputs.limit_reached == 'true'
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -47,18 +73,40 @@ jobs:
           gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "needs-human-review"
 
       - name: Checkout repository
-        if: steps.check-count.outputs.limit_reached == 'false'
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.ref }}
 
+      - name: Install and configure jj
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
+        env:
+          JJ_VERSION: "v0.38.0"
+        run: |
+          curl -LsSf "https://github.com/jj-vcs/jj/releases/download/${JJ_VERSION}/jj-${JJ_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            | tar xzf - --strip-components=0 -C /usr/local/bin ./jj
+          chmod +x /usr/local/bin/jj
+          jj git init --colocate
+          jj config set --repo user.name '"github-actions[bot]"'
+          jj config set --repo user.email '"41898282+github-actions[bot]@users.noreply.github.com"'
+          jj version
+
       - name: Run Claude Code Action
-        if: steps.check-count.outputs.limit_reached == 'false'
-        uses: anthropics/claude-code-action@64c7a0ef71df67b14cb4471f4d9c8565c61042bf # v1
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
+        uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           allowed_bots: "coderabbitai[bot]"
+          claude_args: |
+            --max-turns 10
+            --allowedTools "Bash(jj:*),Bash(git:*),Grep"
           prompt: |
             This PR has received review feedback from Code Rabbit.
             Fix the issues pointed out in the review comments.
@@ -70,7 +118,9 @@ jobs:
             - Do not add new features or make major code style changes
 
       - name: Increment loop count
-        if: steps.check-count.outputs.limit_reached == 'false'
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

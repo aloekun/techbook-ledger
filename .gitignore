@@ -4,6 +4,9 @@
 # Built executables (rebuild with: npm run build:hooks-rs)
 .claude/validate-command.exe
 
+# Local Claude Code settings (machine-specific hooks/permissions)
+.claude/settings.local.json
+
 # Node
 node_modules/
 

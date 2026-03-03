@@ -20,3 +20,23 @@ export function getItems<T>(data: T[]): T[] {
 export function formatName(first: string, last: string) {
   return first + " " + last;
 }
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function processData(data: any) {
+  var results = [];
+  for (var i = 0; i < data.length; i++) {
+    if (data[i] != null) {
+      results.push(data[i]);
+    }
+  }
+  return results;
+}
+
+export function toUpperCase(value: string | undefined) {
+  return value!.toUpperCase();
+}
+
+export function fetchData(url: string): any {
+  // eslint-disable-next-line no-eval
+  return eval("fetch('" + url + "')");
+}

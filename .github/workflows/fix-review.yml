@@ -58,7 +58,6 @@ jobs:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           allowed_bots: "coderabbitai[bot]"
-          claude_args: "--max-turns 5"
           prompt: |
             This PR has received review feedback from Code Rabbit.
             Fix the issues pointed out in the review comments.

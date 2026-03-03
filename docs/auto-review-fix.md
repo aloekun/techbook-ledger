@@ -8,7 +8,8 @@ Code Rabbit のレビュー指摘を Claude Code Action で自動修正する仕
 ```
 Developer が PR 作成
   -> Code Rabbit が自動レビュー
-  -> changes_requested の場合のみ GitHub Actions 発火
+  -> changes_requested / commented の場合 GitHub Actions 発火
+  -> インラインコメント有無を確認 (walkthrough のみなら skip)
   -> PR body のメタ情報からループカウントを取得
   -> 上限未満なら Claude Code Action でコード修正 + カウント更新
   -> 上限以上ならスキップ -> コメント + ラベルで通知
@@ -21,6 +22,7 @@ Developer が PR 作成
 ## Prerequisites
 
 - Code Rabbit がリポジトリに導入済みで、auto review が有効
+- `.coderabbit.yaml` に `request_changes_workflow: true` を設定（Code Rabbit が `CHANGES_REQUESTED` で返すようにする）
 - Code Rabbit がプッシュ後に再レビューする設定であること（ループの起点になる）
 - GitHub Secrets に `ANTHROPIC_API_KEY` が登録済み
 - Branch protection で CI チェック必須、Auto-merge 有効
@@ -31,6 +33,7 @@ Developer が PR 作成
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch:
 
 jobs:
   fix-review:
@@ -46,6 +49,27 @@ jobs:
 - `changes_requested` と `commented` に反応する
 - Code Rabbit は再レビュー時に `commented` 状態で指摘を返すことがあるため、両方をカバーする
 - `approved` では発火しない
+- `commented` の walkthrough 誤発火はインラインコメント確認ステップで防止する
+
+## Actionable Comments Check
+
+`commented` 状態のレビューには walkthrough（要約のみ）も含まれるため、インラインコメントの有無を確認してからClaude を起動する。
+
+```yaml
+- name: Check for actionable comments
+  id: check-actionable
+  env:
+    GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run: |
+    COMMENTS=$(gh api "repos/$REPO/pulls/$PR/reviews/$REVIEW_ID/comments" --jq 'length')
+    if [ "$COMMENTS" -eq 0 ]; then
+      echo "has_actionable=false"  # walkthrough のみ → skip
+    else
+      echo "has_actionable=true"   # コード指摘あり → 続行
+    fi
+```
+
+GitHub API `GET /repos/{owner}/{repo}/pulls/{pull_number}/reviews/{review_id}/comments` でレビューのインラインコメント数を取得。walkthrough はインラインコメント 0、コード指摘はインラインコメント > 0。
 
 ## Loop Count Management
 
@@ -81,28 +105,71 @@ PR body の末尾に HTML コメントとしてカウントを埋め込む。
 
 ## Safety Layers
 
-多層防御で暴走を防止する。
+多層防御で暴走・コスト超過を防止する。
 
 ```
-Layer 1: トリガー制限    - changes_requested / commented で発火 (approved は除外)
-Layer 2: ループカウント  - PR body メタ情報で上限 3 回
-Layer 3: branch protection - CI 必須チェック
-Layer 4: プロンプト制約  - 最小限の修正のみ許可
-Layer 5: 上限時通知      - コメント + ラベルで人間に引き継ぎ
+Layer 1: インラインコメント確認   - walkthrough のみのレビューを除外 (コスト 0)
+Layer 2: --max-turns 10          - Claude のターン数上限 (公式デフォルト)
+Layer 3: --allowedTools 制限      - 必要最小限のツールのみ許可 (permission denial 防止)
+Layer 4: timeout-minutes: 10     - ジョブ全体の時間上限
+Layer 5: ループカウント上限 3     - PR body メタ情報で繰り返し修正を制限
+Layer 6: concurrency group       - 同一 PR の並列実行防止
+Layer 7: プロンプト制約           - 最小限の修正のみ許可 + CI 環境指示
+Layer 8: 上限時通知              - コメント + ラベルで人間に引き継ぎ
 ```
+
+## Tool Permissions
+
+CI 環境では Claude が使用できるツールを `--allowedTools` で明示的に制限する。
+
+**デフォルトで自動許可されるツール:**
+- `Edit`, `Read`, `Write`, `Glob`, `Replace`, `NotebookEditCell`
+- `Bash(git add)`, `Bash(git commit)`, `Bash(git push)`
+
+**追加で許可するツール:**
+- `Bash(jj:*)` - 全 jj 操作（ローカル開発と同じ VCS ツールを使用）
+- `Bash(git:*)` - 全 git 操作（jj の内部操作で必要な場合のバックアップ）
+- `Grep` - ファイル内容の検索
+
+**許可しないツール:**
+- `Bash(pnpm:*)`, `Bash(npm:*)` 等 - ビルド・テスト実行は不要
+- `WebSearch`, `WebFetch` - 外部アクセスは不要
+
+`--allowedTools` を明示しないと、Claude が許可されていないツールを試行し permission denial でターンを浪費する。
+
+## jj (Jujutsu) in CI
+
+ローカル開発と CI で同じ VCS ツールを使うことで、CLAUDE.md の指示との矛盾を排除し一貫性を保つ。
+
+**セットアップ手順:**
+1. `actions/checkout` で PR ブランチをチェックアウト
+2. jj バイナリをダウンロード（musl 版、数秒で完了）
+3. `jj git init --colocate` で既存の git リポジトリに jj を並行セットアップ
+4. `jj config set --repo` でユーザー情報を設定
+5. `.claude/settings.local.json` を空オブジェクトで上書き（ローカル開発用の hook・権限設定を CI で無効化）
+
+**バージョン管理:**
+- jj のバージョンは環境変数 `JJ_VERSION` でピン止め
+- 更新時はこの値を変更するだけで良い
+
+**CI での settings.local.json 上書きが必要な理由:**
+- リポジトリに `.claude/settings.local.json` が追跡されている場合、ローカル開発用の `PreToolUse` hook や `permissions.allow` リストが CI にも適用される
+- `validate-command.exe` (Windows バイナリ) の hook が Linux CI で実行失敗 → 全 Bash ツール呼び出しが permission denied になる
+- CI では `--allowedTools` でツール許可を制御するため、ローカル設定は不要
 
 ## Prompt Constraints
 
 Claude Code Action に渡すプロンプトには以下の制約を必ず含める。
 
 ```
+Constraints:
 - 必要最小限の修正のみ行うこと
 - レビュー指摘があったファイル以外は変更しないこと
 - 大規模リファクタリングは禁止
 - 新機能の追加やコードスタイルの大幅変更はしないこと
 ```
 
-プロジェクト固有の追加指示がある場合は、プロンプト内で CLAUDE.md を参照させる。
+CI 環境に jj をインストール済みのため、CLAUDE.md の VCS 指示がそのまま適用される。プロンプトでの VCS 上書き指示は不要。
 
 ## Merge Strategy
 
@@ -117,7 +184,7 @@ Claude Code Action に渡すプロンプトには以下の制約を必ず含め�
 | 設定対象 | 内容 |
 |---------|------|
 | `.github/workflows/fix-review.yml` | 本仕様に基づくワークフロー定義 |
-| `.coderabbit.yaml` | auto review 有効、再レビュー有効 |
+| `.coderabbit.yaml` | auto review 有効、`request_changes_workflow: true`、再レビュー有効 |
 | GitHub Secrets | `ANTHROPIC_API_KEY` |
 | Branch protection | CI チェック必須、Auto-merge 有効 |
 
@@ -129,10 +196,16 @@ name: Auto Fix Review
 on:
   pull_request_review:
     types: [submitted]
+  workflow_dispatch:
+
+concurrency:
+  group: autofix-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
 
 permissions:
   contents: write
   pull-requests: write
+  issues: write
 
 jobs:
   fix-review:
@@ -141,9 +214,27 @@ jobs:
       && (github.event.review.state == 'changes_requested'
         || github.event.review.state == 'commented')
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
+      - name: Check for actionable comments
+        id: check-actionable
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          REVIEW_ID=${{ github.event.review.id }}
+          REPO="${{ github.repository }}"
+          COMMENTS=$(gh api "repos/$REPO/pulls/$PR_NUMBER/reviews/$REVIEW_ID/comments" --jq 'length')
+          echo "comment_count=$COMMENTS" >> "$GITHUB_OUTPUT"
+          if [ "$COMMENTS" -eq 0 ]; then
+            echo "has_actionable=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_actionable=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Check loop count
+        if: steps.check-actionable.outputs.has_actionable == 'true'
         id: check-count
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -160,7 +251,9 @@ jobs:
           fi
 
       - name: Notify limit reached
-        if: steps.check-count.outputs.limit_reached == 'true'
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'true'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -170,12 +263,47 @@ jobs:
             --body "Auto-fix has reached the maximum retry limit (3). Please review manually."
           gh pr edit "$PR_NUMBER" --repo "$REPO" --add-label "needs-human-review"
 
+      - name: Checkout repository
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+
+      - name: Install and configure jj
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
+        env:
+          JJ_VERSION: "v0.38.0"
+        run: |
+          curl -LsSf "https://github.com/jj-vcs/jj/releases/download/${JJ_VERSION}/jj-${JJ_VERSION}-x86_64-unknown-linux-musl.tar.gz" \
+            | tar xzf - --strip-components=0 -C /usr/local/bin ./jj
+          chmod +x /usr/local/bin/jj
+          jj git init --colocate
+          jj config set --repo user.name '"github-actions[bot]"'
+          jj config set --repo user.email '"41898282+github-actions[bot]@users.noreply.github.com"'
+
+      - name: Clear local settings for CI
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
+        run: |
+          echo '{}' > .claude/settings.local.json
+
       - name: Run Claude Code Action
-        if: steps.check-count.outputs.limit_reached == 'false'
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
         uses: anthropics/claude-code-action@v1
         with:
           anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
           allowed_bots: "coderabbitai[bot]"
+          claude_args: |
+            --max-turns 10
+            --allowedTools "Bash(jj:*),Bash(git:*),Grep"
           prompt: |
             This PR has received review feedback from Code Rabbit.
             Fix the issues pointed out in the review comments.
@@ -187,7 +315,9 @@ jobs:
             - Do not add new features or make major code style changes
 
       - name: Increment loop count
-        if: steps.check-count.outputs.limit_reached == 'false'
+        if: >
+          steps.check-actionable.outputs.has_actionable == 'true'
+          && steps.check-count.outputs.limit_reached == 'false'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -198,9 +328,9 @@ jobs:
           NEW_COUNT=$((COUNT + 1))
 
           if echo "$BODY" | grep -q '<!-- claude-autofix-count:'; then
-            NEW_BODY=$(echo "$BODY" | sed "s/<!-- claude-autofix-count:[0-9]* -->/<!-- claude-autofix-count:$NEW_COUNT -->/")
+            NEW_BODY=$(printf '%s' "$BODY" | sed -E "s/<!-- claude-autofix-count:[0-9]+ -->/<!-- claude-autofix-count:$NEW_COUNT -->/g")
           else
-            NEW_BODY="$BODY
+            NEW_BODY="${BODY}
           <!-- claude-autofix-count:$NEW_COUNT -->"
           fi
 
@@ -212,6 +342,7 @@ jobs:
 - Claude Code Action は 1 回の実行で 1 ラウンドの修正のみ行う。複数ラウンドの修正は Code Rabbit の再レビュー -> 再トリガーで実現する
 - 修正ごとにワークフローが別ジョブとして起動するため、前回の修正コンテキストは引き継がれない
 - Code Rabbit が再レビューしない設定の場合、ループが成立しない
+- `pull_request_review` イベントはベースブランチのワークフローを参照する。ワークフロー修正はベースブランチにマージしないと反映されない
 
 ## Future: pr-autoland Integration
 

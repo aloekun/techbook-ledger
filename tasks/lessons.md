@@ -142,3 +142,56 @@
 - **原則**: jj でコミットメッセージを扱うコマンドは、常に `-m` フラグを付けて実行する
 - `jj squash --quiet` でも回避できない（`--quiet` はメッセージ編集を抑制しない）
 - `JJ_EDITOR=true` で空エディタを代用する方法もあるが、メッセージが意図せず変わるリスクがある
+
+## Task 17: Auto Review Fix ワークフロー
+
+### GitHub Actions で Claude Code Action を使う場合は必ずコスト制御を設定する
+- `--max-turns` を完全に削除してはならない。小さすぎる場合は適切な値に調整する（例: 15-20）
+- ジョブに `timeout-minutes` を必ず設定する（例: 10 分）
+- **背景**: `--max-turns 5` が小さすぎて `error_max_turns` になったため全削除したが、上限なしだと Claude が長時間走り続けてコストが膨らむ
+- **正解**: 削除ではなく適切な値（15-20）に調整し、`timeout-minutes` も併用する
+
+### pull_request_review イベントはベースブランチのワークフローを参照する
+- PR ブランチのワークフローではなく、develop (ベースブランチ) 側のワークフローが実行される
+- ワークフロー修正は develop にマージしないと反映されない
+- テスト用 PR の前に、ワークフロー修正を先に develop にマージする必要がある
+
+### actions/checkout は Claude Code Action の前に必須
+- `actions/checkout@v4` がないと `fatal: not in a git directory` で Claude がファイルにアクセスできない
+- `ref: ${{ github.event.pull_request.head.ref }}` で PR ブランチをチェックアウトする
+
+### Code Rabbit の `request_changes_workflow: true` は再レビュー時に `COMMENTED` になる場合がある
+- 初回レビューは `CHANGES_REQUESTED` だが、コード未修正のリベース後は `COMMENTED`（重複コメント扱い）で返される
+- ワークフローの `if` 条件で `commented` もカバーする必要がある
+- ただし `commented` は walkthrough 等の非実質的レビューでも発火するため、不要な Claude 実行が起きるリスクがある
+
+### コスト意識を持つ — セーフガードなしでワークフローを組まない
+- ユーザーから「コストを最小限に」と指示を受けたら、全ての設計判断にコスト制約を反映する
+- セーフガード: `--max-turns`、`timeout-minutes`、ループカウント上限の 3 層で制御する
+- 「動くようにする」と「安全に動くようにする」は別。後者を常に優先する
+
+### CI 環境では --allowedTools を必ず設定する
+- Claude Code Action はデフォルトで `Edit`, `Read`, `Write`, `Glob` 等の基本ツールと、`Bash(git add)`, `Bash(git commit)`, `Bash(git push)` のみ自動許可
+- `Bash` の任意実行はデフォルト無効。`git status`, `git diff` 等も明示的に許可が必要
+- `--allowedTools` 未設定だと Claude が許可外ツールを試行 → permission denial → ターン浪費 → `error_max_turns`
+- **実例**: 11 ターン中 5 ターンが permission denial で浪費。$0.68 使って修正失敗
+- **対策**: `--allowedTools "Bash(git:*),Grep"` を `claude_args` に追加
+
+### CLAUDE.md のローカル専用指示が CI の Claude を混乱させる
+- リポジトリの CLAUDE.md に `jj` (Jujutsu) 使用指示がある場合、CI の Claude も `jj` を使おうとする
+- **対策**: CI に jj をインストールし、ローカルと同じ VCS を使用させる（一貫性を優先）
+
+### .claude/settings.local.json が CI の permission denial の根本原因になる
+- `.claude/settings.local.json` がリポジトリに追跡されている場合、CI でも checkout される
+- ローカル開発用の `PreToolUse` hook（`validate-command.exe`）が Linux CI で実行不能 → 全 Bash コマンドが denied
+- **実例**: 5/11 ターンが permission denied、$1.35 消費して修正失敗（2回連続）
+- **対策**: CI ワークフローで `echo '{}' > .claude/settings.local.json` してローカル設定を無効化
+- **長期対策**: `.claude/settings.local.json` を `.gitignore` に追加し、リポジトリから除外する
+
+### jj config set は TOML 値として解釈される
+- `jj config set --repo user.name "github-actions[bot]"` の `[bot]` が TOML セクションヘッダーとして誤解析される
+- **対策**: `'"github-actions[bot]"'` のように bash の single quote で TOML の double quote を渡す
+
+### jj tarball のパスは `./jj` (先頭にドットスラッシュ)
+- `tar xzf - -C /usr/local/bin jj` では `Not found in archive`
+- **対策**: `tar xzf - --strip-components=0 -C /usr/local/bin ./jj`

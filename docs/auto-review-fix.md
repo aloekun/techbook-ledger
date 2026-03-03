@@ -36,15 +36,16 @@ jobs:
   fix-review:
     if: >
       github.event.review.user.login == 'coderabbitai[bot]'
-      && github.event.review.state == 'changes_requested'
+      && (github.event.review.state == 'changes_requested'
+        || github.event.review.state == 'commented')
     runs-on: ubuntu-latest
     steps:
       # ... (後述)
 ```
 
-- `changes_requested` のみに反応する
-- `approved` や `commented` では発火しない
-- `commented` は運用で必要と判断したら追加を検討する
+- `changes_requested` と `commented` に反応する
+- Code Rabbit は再レビュー時に `commented` 状態で指摘を返すことがあるため、両方をカバーする
+- `approved` では発火しない
 
 ## Loop Count Management
 
@@ -83,7 +84,7 @@ PR body の末尾に HTML コメントとしてカウントを埋め込む。
 多層防御で暴走を防止する。
 
 ```
-Layer 1: トリガー制限    - changes_requested のみ発火
+Layer 1: トリガー制限    - changes_requested / commented で発火 (approved は除外)
 Layer 2: ループカウント  - PR body メタ情報で上限 3 回
 Layer 3: branch protection - CI 必須チェック
 Layer 4: プロンプト制約  - 最小限の修正のみ許可
@@ -137,7 +138,8 @@ jobs:
   fix-review:
     if: >
       github.event.review.user.login == 'coderabbitai[bot]'
-      && github.event.review.state == 'changes_requested'
+      && (github.event.review.state == 'changes_requested'
+        || github.event.review.state == 'commented')
     runs-on: ubuntu-latest
 
     steps:
@@ -148,7 +150,8 @@ jobs:
         run: |
           PR_NUMBER=${{ github.event.pull_request.number }}
           BODY=$(gh pr view "$PR_NUMBER" --repo "${{ github.repository }}" --json body -q '.body')
-          COUNT=$(echo "$BODY" | grep -oP '<!-- claude-autofix-count:\K\d+' || echo "0")
+          COUNT=$(printf '%s' "$BODY" | grep -oP '<!-- claude-autofix-count:\K\d+' | tail -n1 || true)
+          COUNT=${COUNT:-0}
           echo "count=$COUNT" >> "$GITHUB_OUTPUT"
           if [ "$COUNT" -ge 3 ]; then
             echo "limit_reached=true" >> "$GITHUB_OUTPUT"

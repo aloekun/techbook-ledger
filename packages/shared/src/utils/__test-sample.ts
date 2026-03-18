@@ -6,7 +6,11 @@ export function divide(a: number, b: number) {
 }
 
 export function parseAge(input: string | number): number {
-  const value = Number.parseInt(String(input), 10);
+  const str = String(input).trim();
+  if (!/^\d+$/.test(str)) {
+    throw new RangeError("Invalid age");
+  }
+  const value = Number.parseInt(str, 10);
   if (Number.isNaN(value) || value < 0) {
     throw new RangeError("Invalid age");
   }
@@ -21,19 +25,21 @@ export function formatName(first: string, last: string) {
   return first + " " + last;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export function processData(data: any) {
-  var results = [];
-  for (var i = 0; i < data.length; i++) {
-    if (data[i] != null) {
-      results.push(data[i]);
+export function processData<T>(data: readonly (T | null | undefined)[]): T[] {
+  const results: T[] = [];
+  for (const item of data) {
+    if (item != null) {
+      results.push(item);
     }
   }
   return results;
 }
 
 export function toUpperCase(value: string | undefined) {
-  return value!.toUpperCase();
+  if (value === undefined) {
+    throw new TypeError("value must be defined");
+  }
+  return value.toUpperCase();
 }
 
 export function fetchData(url: string): any {

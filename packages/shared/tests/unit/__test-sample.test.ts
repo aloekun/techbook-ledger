@@ -1,4 +1,4 @@
-import { divide, parseAge, getItems, formatName } from "../../src/utils/__test-sample.js";
+import { divide, parseAge, getItems, formatName, processData, toUpperCase } from "../../src/utils/__test-sample.js";
 
 describe("divide", () => {
   it("returns the quotient of two numbers", () => {
@@ -34,6 +34,12 @@ describe("parseAge", () => {
     expect(() => parseAge("abc")).toThrowError(RangeError);
     expect(() => parseAge("")).toThrowError(RangeError);
   });
+
+  it("throws RangeError for partially numeric strings", () => {
+    expect(() => parseAge("12abc")).toThrowError(RangeError);
+    expect(() => parseAge("42years")).toThrowError(RangeError);
+    expect(() => parseAge("12.3")).toThrowError(RangeError);
+  });
 });
 
 describe("getItems", () => {
@@ -68,5 +74,30 @@ describe("formatName", () => {
     expect(formatName("", "Doe")).toBe(" Doe");
     expect(formatName("John", "")).toBe("John ");
     expect(formatName("", "")).toBe(" ");
+  });
+});
+
+describe("processData", () => {
+  it("filters out null and undefined values", () => {
+    expect(processData([1, null, 2, undefined, 3])).toEqual([1, 2, 3]);
+  });
+
+  it("preserves non-null values", () => {
+    expect(processData([1, 2, 3])).toEqual([1, 2, 3]);
+  });
+
+  it("returns empty array for empty input", () => {
+    expect(processData([])).toEqual([]);
+  });
+});
+
+describe("toUpperCase", () => {
+  it("converts string to uppercase", () => {
+    expect(toUpperCase("hello")).toBe("HELLO");
+    expect(toUpperCase("test")).toBe("TEST");
+  });
+
+  it("throws TypeError when value is undefined", () => {
+    expect(() => toUpperCase(undefined)).toThrowError(TypeError);
   });
 });

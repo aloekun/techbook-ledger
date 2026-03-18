@@ -42,7 +42,6 @@ export function toUpperCase(value: string | undefined) {
   return value.toUpperCase();
 }
 
-export function fetchData(url: string): any {
-  // eslint-disable-next-line no-eval
-  return eval("fetch('" + url + "')");
+export function fetchData(url: string): Promise<Response> {
+  return fetch(url);
 }

@@ -1,4 +1,4 @@
-import { divide, parseAge, getItems, formatName, processData, toUpperCase } from "../../src/utils/__test-sample.js";
+import { divide, parseAge, getItems, formatName, processData, toUpperCase, fetchData } from "../../src/utils/__test-sample.js";
 
 describe("divide", () => {
   it("returns the quotient of two numbers", () => {
@@ -99,5 +99,28 @@ describe("toUpperCase", () => {
 
   it("throws TypeError when value is undefined", () => {
     expect(() => toUpperCase(undefined)).toThrowError(TypeError);
+  });
+});
+
+describe("fetchData", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("calls fetch with the given URL and returns the response", async () => {
+    const mockResponse = { ok: true, status: 200 } as Response;
+    globalThis.fetch = vi.fn().mockResolvedValue(mockResponse);
+
+    const result = await fetchData("https://example.com");
+    expect(globalThis.fetch).toHaveBeenCalledWith("https://example.com");
+    expect(result).toBe(mockResponse);
+  });
+
+  it("propagates fetch rejection", async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new TypeError("Failed to fetch"));
+
+    await expect(fetchData("https://invalid.test")).rejects.toThrow("Failed to fetch");
   });
 });

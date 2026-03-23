@@ -75,7 +75,7 @@ pnpm workspace による 3 パッケージ構成:
 
 ## バージョン管理 (Jujutsu)
 
-**`git` コマンドは `.claude/validate-command.exe` フックによりブロックされる。** 代わりに `jj` を使用する。
+**`git` コマンドは `.claude/hooks-pre-tool-validate.exe` フックによりブロックされる。** 代わりに `jj` を使用する。
 
 ```bash
 jj status                              # 状態確認
